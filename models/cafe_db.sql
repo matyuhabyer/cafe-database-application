@@ -396,7 +396,7 @@ CREATE TABLE IF NOT EXISTS `cafe_db`.`TransactionTbl` (
   `transaction_id` INT NOT NULL AUTO_INCREMENT,
   `order_id` INT NOT NULL,
   `currency_id` INT NOT NULL,
-  `payment_method` ENUM('cash', 'card', 'bank_transfer', 'other') NOT NULL,
+  `payment_method` ENUM('cash', 'card', 'gcash', 'other') NOT NULL,
   `amount_paid` DECIMAL(10,2) NOT NULL,
   `exchange_rate` DECIMAL(12,6) NOT NULL DEFAULT '1.000000',
   `transaction_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
