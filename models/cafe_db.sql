@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `cafe_db`.`Currency` (
   `code` VARCHAR(5) NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `symbol` VARCHAR(5) NOT NULL,
-  `rate` DECIMAL(12,6) NOT NULL DEFAULT '1.0000',
+  `rate` DECIMAL(12,4) NOT NULL DEFAULT '1.0000',
   `last_updated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`currency_id`),
   UNIQUE INDEX `code_UNIQUE` (`code` ASC) VISIBLE)
@@ -398,7 +398,7 @@ CREATE TABLE IF NOT EXISTS `cafe_db`.`TransactionTbl` (
   `currency_id` INT NOT NULL,
   `payment_method` ENUM('cash', 'card', 'bank_transfer', 'other') NOT NULL,
   `amount_paid` DECIMAL(10,2) NOT NULL,
-  `exchange_rate` DECIMAL(12,6) NOT NULL DEFAULT '1.000000',
+  `exchange_rate` DECIMAL(12,4) NOT NULL DEFAULT '1.0000',
   `transaction_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` ENUM('pending', 'completed') NOT NULL DEFAULT 'pending',
   `branch_id` INT NULL DEFAULT NULL,
