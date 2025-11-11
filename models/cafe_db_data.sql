@@ -41,7 +41,8 @@ UNLOCK TABLES;
 
 LOCK TABLES `Currency` WRITE;
 /*!40000 ALTER TABLE `Currency` DISABLE KEYS */;
-INSERT INTO `Currency` VALUES (1,'PHP','Philippine Peso','₱',1.0000,'2025-11-07 06:32:48'),(2,'USD','US Dollars','$',0.0170,'2025-11-07 08:06:20'),(3,'KRW','Korean Won','₩',24.6600,'2025-11-07 08:07:13');
+-- PHP-only seed (no foreign currencies yet)
+INSERT INTO `Currency` (`currency_id`,`code`,`name`,`symbol`,`rate`) VALUES (1,'PHP','Philippine Peso','₱',1.0000);
 /*!40000 ALTER TABLE `Currency` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -51,6 +52,10 @@ UNLOCK TABLES;
 
 LOCK TABLES `Customer` WRITE;
 /*!40000 ALTER TABLE `Customer` DISABLE KEYS */;
+-- Sample customers (requires schema_updates.sql for username/password columns)
+INSERT INTO `Customer` (`username`,`password`,`name`,`phone_num`,`email`) VALUES
+('test_user1', MD5('Password123!'), 'Test User 1', '09170000001', 'user1@example.com'),
+('test_user2', MD5('Password123!'), 'Test User 2', '09170000002', 'user2@example.com');
 /*!40000 ALTER TABLE `Customer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,9 +75,32 @@ UNLOCK TABLES;
 
 LOCK TABLES `Employee` WRITE;
 /*!40000 ALTER TABLE `Employee` DISABLE KEYS */;
-INSERT INTO `Employee` VALUES (1,'Matthew Javier','admin',NULL,NULL),(2,'Alec Dela Cruz','admin',NULL,NULL),(3,'Margaux Miranda','admin',NULL,NULL),(4,'Macy Estabillo','admin',NULL,NULL);
+-- Requires schema_updates.sql to be applied first (adds username/password columns)
+-- Seed: 2 admins, 2 managers, 2 staff per branch (Manila=1, Laguna=2)
+INSERT INTO `Employee` (`username`,`password`,`name`,`role`,`contact_num`,`branch_id`) VALUES
+('manila_admin1', MD5('Password123!'), 'Manila Admin One', 'admin', '09990000001', 1),
+('manila_admin2', MD5('Password123!'), 'Manila Admin Two', 'admin', '09990000002', 1),
+('manila_manager1', MD5('Password123!'), 'Manila Manager One', 'manager', '09990000003', 1),
+('manila_manager2', MD5('Password123!'), 'Manila Manager Two', 'manager', '09990000004', 1),
+('manila_staff1', MD5('Password123!'), 'Manila Staff One', 'staff', '09990000005', 1),
+('manila_staff2', MD5('Password123!'), 'Manila Staff Two', 'staff', '09990000006', 1),
+('laguna_admin1', MD5('Password123!'), 'Laguna Admin One', 'admin', '09990000011', 2),
+('laguna_admin2', MD5('Password123!'), 'Laguna Admin Two', 'admin', '09990000012', 2),
+('laguna_manager1', MD5('Password123!'), 'Laguna Manager One', 'manager', '09990000013', 2),
+('laguna_manager2', MD5('Password123!'), 'Laguna Manager Two', 'manager', '09990000014', 2),
+('laguna_staff1', MD5('Password123!'), 'Laguna Staff One', 'staff', '09990000015', 2),
+('laguna_staff2', MD5('Password123!'), 'Laguna Staff Two', 'staff', '09990000016', 2);
 /*!40000 ALTER TABLE `Employee` ENABLE KEYS */;
 UNLOCK TABLES;
+
+-- Assign a manager to each branch after employees exist
+UPDATE Branch b
+SET manager_id = (SELECT e.employee_id FROM Employee e WHERE e.username = 'manila_manager1' LIMIT 1)
+WHERE b.branch_id = 1;
+
+UPDATE Branch b
+SET manager_id = (SELECT e.employee_id FROM Employee e WHERE e.username = 'laguna_manager1' LIMIT 1)
+WHERE b.branch_id = 2;
 
 --
 -- Dumping data for table `Extra`
@@ -100,6 +128,10 @@ UNLOCK TABLES;
 
 LOCK TABLES `LoyaltyCard` WRITE;
 /*!40000 ALTER TABLE `LoyaltyCard` DISABLE KEYS */;
+-- Loyalty cards for sample customers
+INSERT INTO `LoyaltyCard` (`customer_id`,`card_number`,`points`,`is_active`) VALUES
+((SELECT customer_id FROM Customer WHERE username='test_user1' LIMIT 1), 'LC-000001', 0, 1),
+((SELECT customer_id FROM Customer WHERE username='test_user2' LIMIT 1), 'LC-000002', 0, 1);
 /*!40000 ALTER TABLE `LoyaltyCard` ENABLE KEYS */;
 UNLOCK TABLES;
 
