@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,24 +8,7 @@
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="main-header">
-    <div class="logo">
-      <img src="https://cdn-icons-png.flaticon.com/512/3050/3050525.png" alt="Cafe Logo">
-      <h1>The Waiting Room Café</h1>
-    </div>
-    <nav class="navbar">
-      <a href="products.html">Home</a>
-      <a href="products.html">Menu</a>
-      <a href="cart.html">Cart</a>
-      <a href="orders.html">Orders</a>
-      <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
-    </nav>
-    <div class="user-section">
-      <span id="userRole">Guest</span>
-      <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
-    </div>
-  </header>
+  <?php include('includes/header.php'); ?>
 
   <main>
     <h2>Your Order History</h2>
@@ -49,6 +33,5 @@
     }
   </script>
 
-  <script src="js/header.js"></script>
 </body>
 </html>
