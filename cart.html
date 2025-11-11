@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="main-header">
+    <div class="logo">
+      <img src="https://cdn-icons-png.flaticon.com/512/3050/3050525.png" alt="Cafe Logo">
+      <h1>The Waiting Room Café</h1>
+    </div>
+    <nav class="navbar">
+      <a href="products.html">Home</a>
+      <a href="products.html">Menu</a>
+      <a href="cart.html">Cart</a>
+      <a href="orders.html">Orders</a>
+      <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
+    </nav>
+    <div class="user-section">
+      <span id="userRole">Guest</span>
+      <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <h2>Your Cart</h2>
+    <div id="cartItems"></div>
+    <button id="placeOrder">Place Order</button>
+  </main>
+
+  <script>
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cartDiv = document.getElementById("cartItems");
+    let total = 0;
+
+    if (cart.length === 0) cartDiv.innerHTML = "<p>Your cart is empty.</p>";
+    else {
+      cart.forEach(item => {
+        cartDiv.innerHTML += `<div>${item.name} - ₱${item.price}</div>`;
+        total += item.price;
+      });
+      cartDiv.innerHTML += `<hr><p><strong>Total:</strong> ₱${total}</p>`;
+    }
+
+    document.getElementById("placeOrder").addEventListener("click", () => {
+      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+      orders.push({ id: Date.now(), items: cart, total });
+      localStorage.setItem("orders", JSON.stringify(orders));
+      localStorage.removeItem("cart");
+      alert("Order placed successfully!");
+      window.location.href = "orders.html";
+    });
+  </script>
+
+  <script src="js/header.js"></script>
+</body>
+</html>
