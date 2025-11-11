@@ -10,5 +10,5 @@ if (role !== "guest") logoutBtn.style.display = "inline-block";
 
 logoutBtn.addEventListener("click", () => {
   localStorage.removeItem("role");
-  window.location.href = "index.html";
+  window.location.href = "index.php";
 });
