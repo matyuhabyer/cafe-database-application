@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Waiting Room Café | Register</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .register-wrapper {
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    .register-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .register-header {
+      background: linear-gradient(135deg, #5a3825 0%, #7a5239 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    
+    .register-header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .register-header p {
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    
+    .register-body {
+      padding: 40px 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .register-button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .register-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    
+    .register-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    .register-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .login-link {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .login-link p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .login-link a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    
+    .login-link a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c33;
+      display: none;
+      font-size: 0.9rem;
+    }
+    
+    .error-message.show {
+      display: block;
+      animation: shake 0.5s ease;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3c3;
+      display: none;
+      font-size: 0.9rem;
+    }
+    
+    .success-message.show {
+      display: block;
+    }
+    
+    .password-hint {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 5px;
+    }
+    
+    @media (max-width: 480px) {
+      .register-header {
+        padding: 30px 20px;
+      }
+      
+      .register-body {
+        padding: 30px 20px;
+      }
+      
+      .register-header h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="register-wrapper">
+    <div class="register-card">
+      <div class="register-header">
+        <h1>☕ The Waiting Room Café</h1>
+        <p>Create your account to get started</p>
+      </div>
+      
+      <div class="register-body">
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <form id="registerForm" method="post">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              placeholder="Choose a username" 
+              required 
+              autocomplete="username"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Enter password (min 6 characters)" 
+              required 
+              autocomplete="new-password"
+              minlength="6"
+            >
+            <div class="password-hint">Password must be at least 6 characters long</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              placeholder="Enter your full name" 
+              required 
+              autocomplete="name"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              placeholder="your.email@example.com" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="phone_num">Phone Number</label>
+            <input 
+              type="tel" 
+              id="phone_num" 
+              name="phone_num" 
+              placeholder="1234567890" 
+              required 
+              autocomplete="tel"
+            >
+          </div>
+          
+          <button type="submit" class="register-button" id="registerButton">
+            Create Account
+          </button>
+        </form>
+        
+        <div class="login-link">
+          <p>Already have an account? <a href="index.html">Login here</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get context path - same method as test-servlets.html
+    const BASE_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+    const API_BASE = BASE_URL + '/api/auth';
+    
+    console.log('Base URL:', BASE_URL);
+    console.log('API Base:', API_BASE);
+    
+    const registerForm = document.getElementById('registerForm');
+    const registerButton = document.getElementById('registerButton');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('show');
+      successMessage.classList.remove('show');
+      setTimeout(() => {
+        errorMessage.classList.remove('show');
+      }, 5000);
+    }
+    
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.add('show');
+      errorMessage.classList.remove('show');
+    }
+    
+    function hideMessages() {
+      errorMessage.classList.remove('show');
+      successMessage.classList.remove('show');
+    }
+    
+    registerForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideMessages();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phoneNum = document.getElementById('phone_num').value.trim();
+      
+      if (!username || !password || !name || !email || !phoneNum) {
+        showError('Please fill in all fields');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showError('Password must be at least 6 characters long');
+        return;
+      }
+      
+      console.log('Registration attempt:', { username, name, email, phoneNum, passwordLength: password.length });
+      
+      // Show loading state
+      const originalText = registerButton.textContent;
+      registerButton.disabled = true;
+      registerButton.textContent = 'Creating account...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ username, password, name, email, phone_num: phoneNum })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          console.error('HTTP Error:', response.status, response.statusText);
+        }
+        
+        const result = await response.json();
+        console.log('Register response:', result);
+        
+        if (result.success) {
+          showSuccess('Registration successful! Redirecting to login...');
+          
+          // Redirect to login after short delay
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } else {
+          showError(result.message || result.error || 'Registration failed. Please try again.');
+          console.error('Registration failed:', result);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showError('Error connecting to server. Please check your connection and try again.');
+      } finally {
+        registerButton.disabled = false;
+        registerButton.textContent = originalText;
+      }
+    });
+    
+    // Clear error on input
+    ['username', 'password', 'name', 'email', 'phone_num'].forEach(id => {
+      document.getElementById(id).addEventListener('input', hideMessages);
+    });
+  </script>
+
+</body>
+</html>
+
