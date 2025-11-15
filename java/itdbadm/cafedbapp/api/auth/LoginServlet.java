@@ -29,6 +29,12 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        System.out.println("========================================");
+        System.out.println("LoginServlet: Request received");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Content-Type: " + request.getContentType());
+        System.out.println("Method: " + request.getMethod());
+        
         // Read JSON input
         StringBuilder jsonInput = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
@@ -38,7 +44,24 @@ public class LoginServlet extends HttpServlet {
             }
         }
         
-        JsonObject input = JsonParser.parseString(jsonInput.toString()).getAsJsonObject();
+        String jsonString = jsonInput.toString();
+        System.out.println("Received JSON: " + jsonString);
+        
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            System.err.println("LoginServlet: Empty JSON input");
+            ResponseUtil.sendErrorResponse(response, "Empty request body", 400);
+            return;
+        }
+        
+        JsonObject input;
+        try {
+            input = JsonParser.parseString(jsonString).getAsJsonObject();
+        } catch (Exception e) {
+            System.err.println("LoginServlet: JSON parsing error: " + e.getMessage());
+            e.printStackTrace();
+            ResponseUtil.sendErrorResponse(response, "Invalid JSON format: " + e.getMessage(), 400);
+            return;
+        }
         
         // Validate input
         if (!input.has("username") || !input.has("password") || !input.has("role")) {

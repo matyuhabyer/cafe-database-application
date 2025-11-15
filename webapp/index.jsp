@@ -32,11 +32,12 @@
   </div>
 
   <script>
-    // Get the context path dynamically
-    // Extract context path from URL (e.g., /cafedbapp/ or /cafedbapp-1.0/)
-    const pathParts = window.location.pathname.split('/').filter(p => p);
-    const contextPath = pathParts[0] || '';
-    const apiBase = contextPath ? `/${contextPath}/api` : '/api';
+    // Get the context path dynamically - same method as test-servlets.html
+    const BASE_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+    const API_BASE = BASE_URL + '/api/auth';
+    
+    console.log('Base URL:', BASE_URL);
+    console.log('API Base:', API_BASE);
     
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -46,8 +47,14 @@
       
       console.log('Login attempt:', { username, role, passwordLength: password.length });
       
+      // Show loading state
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Logging in...';
+      
       try {
-        const response = await fetch(`${apiBase}/auth/login`, {
+        const response = await fetch(`${API_BASE}/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -55,6 +62,13 @@
           credentials: 'include',
           body: JSON.stringify({ username, password, role })
         });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          console.error('HTTP Error:', response.status, response.statusText);
+        }
         
         const result = await response.json();
         console.log('Login response:', result);
@@ -68,12 +82,15 @@
             window.location.href = 'admin.jsp';
           }
         } else {
-          alert('Login failed: ' + result.message);
+          alert('Login failed: ' + (result.message || result.error || 'Unknown error'));
           console.error('Login failed:', result);
         }
       } catch (error) {
         console.error('Error:', error);
-        alert('Error connecting to server: ' + error.message);
+        alert('Error connecting to server: ' + error.message + '\n\nCheck browser console (F12) for details.');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
       }
     });
   </script>
