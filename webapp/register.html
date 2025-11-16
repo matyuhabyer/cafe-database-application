@@ -14,7 +14,7 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc6 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -47,7 +47,7 @@
     }
     
     .register-header {
-      background: linear-gradient(135deg, #5a3825 0%, #7a5239 100%);
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
       color: white;
       padding: 40px 30px;
       text-align: center;
@@ -92,15 +92,15 @@
     
     .form-group input:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: #8b6f47;
       background: white;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
     }
     
     .register-button {
       width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
       color: white;
       border: none;
       border-radius: 10px;
@@ -109,12 +109,13 @@
       cursor: pointer;
       transition: all 0.3s ease;
       margin-top: 10px;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 15px rgba(109, 76, 65, 0.3);
     }
     
     .register-button:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      box-shadow: 0 6px 20px rgba(109, 76, 65, 0.4);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
     }
     
     .register-button:active:not(:disabled) {
@@ -139,14 +140,14 @@
     }
     
     .login-link a {
-      color: #667eea;
+      color: #6d4c41;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
     }
     
     .login-link a:hover {
-      color: #764ba2;
+      color: #8b6f47;
       text-decoration: underline;
     }
     
@@ -398,6 +399,15 @@
     // Clear error on input
     ['username', 'password', 'name', 'email', 'phone_num'].forEach(id => {
       document.getElementById(id).addEventListener('input', hideMessages);
+    });
+  </script>
+  
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: allow guests, redirect if already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      applyPageAccessControl();
     });
   </script>
 

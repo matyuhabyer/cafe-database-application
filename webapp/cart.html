@@ -14,7 +14,7 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f5f5;
+      background: #f5f5dc;
       min-height: 100vh;
     }
     
@@ -25,18 +25,19 @@
     }
     
     h2 {
-      color: #5a3825;
+      color: #6d4c41;
       font-size: 2rem;
       margin-bottom: 30px;
       text-align: center;
     }
     
     .cart-items {
-      background: white;
+      background: #faf8f3;
       border-radius: 15px;
       padding: 25px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
     }
     
     .cart-item {
@@ -82,7 +83,7 @@
     .cart-item-price p {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #667eea;
+      color: #6d4c41;
       margin: 0;
     }
     
@@ -102,15 +103,16 @@
     }
     
     .cart-summary {
-      background: white;
+      background: #faf8f3;
       border-radius: 15px;
       padding: 30px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
       text-align: center;
+      border: 1px solid #d7ccc8;
     }
     
     .cart-summary h3 {
-      color: #5a3825;
+      color: #6d4c41;
       font-size: 2rem;
       margin-bottom: 20px;
     }
@@ -118,20 +120,21 @@
     .btn-place-order {
       width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
       color: white;
       border: none;
       border-radius: 10px;
       font-size: 1.2rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 4px 15px rgba(109, 76, 65, 0.3);
     }
     
     .btn-place-order:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      box-shadow: 0 6px 20px rgba(109, 76, 65, 0.4);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
     }
     
     .btn-place-order:disabled {
@@ -142,9 +145,10 @@
     .empty-cart {
       text-align: center;
       padding: 60px 20px;
-      background: white;
+      background: #faf8f3;
       border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
     }
     
     .empty-cart h3 {
@@ -160,17 +164,18 @@
     
     .empty-cart a {
       display: inline-block;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
       color: white;
       padding: 12px 30px;
       border-radius: 8px;
       text-decoration: none;
       font-weight: 600;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.3s;
     }
     
     .empty-cart a:hover {
       transform: scale(1.05);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
     }
     
     .loading {
@@ -190,6 +195,37 @@
     <div id="cartSummary" style="display: none;">
       <div class="cart-summary">
         <h3 id="cartTotal">Total: ₱0.00</h3>
+        
+        <div class="checkout-options" style="margin: 25px 0; padding: 25px; background: white; border-radius: 12px; border: 1px solid #d7ccc8;">
+          <h4 style="color: #6d4c41; margin-bottom: 20px; font-size: 1.3rem;">Checkout Options</h4>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="branchSelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Select Branch:</label>
+            <select id="branchSelect" style="width: 100%; padding: 12px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" required>
+              <option value="">Loading branches...</option>
+            </select>
+            <small style="display: block; margin-top: 5px; color: #666; font-size: 0.85rem;">Choose the branch where you want to pick up your order</small>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="checkoutCurrency" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Payment Currency:</label>
+            <select id="checkoutCurrency" style="width: 100%; padding: 12px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+              <option value="">Loading currencies...</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="paymentMethod" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Payment Method:</label>
+            <select id="paymentMethod" style="width: 100%; padding: 12px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" required>
+              <option value="">Select payment method</option>
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+        </div>
+        
         <button id="placeOrder" class="btn-place-order">Place Order</button>
       </div>
     </div>
@@ -199,6 +235,14 @@
   <script>
     // Load header
     includeHTML('header-container', 'includes/header.html');
+  </script>
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: require customer login
+    document.addEventListener('DOMContentLoaded', function() {
+      applyPageAccessControl();
+    });
   </script>
   <script src="js/cart.js"></script>
 </body>

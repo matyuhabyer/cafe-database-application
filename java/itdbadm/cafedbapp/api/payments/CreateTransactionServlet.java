@@ -47,18 +47,34 @@ public class CreateTransactionServlet extends HttpServlet {
         
         int orderId = input.get("order_id").getAsInt();
         int currencyId = input.get("currency_id").getAsInt();
-        String paymentMethod = input.get("payment_method").getAsString();
+        String paymentMethod = input.get("payment_method").getAsString().toLowerCase().trim();
         double amountPaid = input.get("amount_paid").getAsDouble();
         
-        // Map GCash to bank_transfer
-        if ("gcash".equalsIgnoreCase(paymentMethod)) {
-            paymentMethod = "bank_transfer";
+        // Business Rule: Validate payment method - must be one of: cash, card, bank_transfer, others
+        // Validate payment method
+        String[] validPaymentMethods = {"cash", "card", "bank_transfer", "others"};
+        boolean isValidPaymentMethod = false;
+        for (String validMethod : validPaymentMethods) {
+            if (validMethod.equals(paymentMethod)) {
+                isValidPaymentMethod = true;
+                break;
+            }
+        }
+        
+        if (!isValidPaymentMethod) {
+            ResponseUtil.sendErrorResponse(response, 
+                "Invalid payment method. Must be one of: cash, card, bank_transfer, others", 400);
+            return;
         }
         
         HttpSession session = request.getSession(false);
         Integer employeeId = null;
+        String role = null;
+        Object branchIdObj = null;
         if (session != null && "employee".equals(session.getAttribute("user_type"))) {
             employeeId = (Integer) session.getAttribute("user_id");
+            role = (String) session.getAttribute("role");
+            branchIdObj = session.getAttribute("branch_id");
         }
         
         Connection conn = DatabaseConfig.getDBConnection();
@@ -86,6 +102,20 @@ public class CreateTransactionServlet extends HttpServlet {
                     order.put("total_amount", rs.getDouble("total_amount"));
                     order.put("status", rs.getString("status"));
                     order.put("branch_id", rs.getObject("branch_id"));
+                }
+            }
+            
+            // Business Rule: Branch restriction - Staff/Managers can only record payments for orders from their branch
+            // Admin and customers can record payments for any order
+            if (employeeId != null && !"admin".equals(role) && branchIdObj != null) {
+                Integer orderBranchId = (Integer) order.get("branch_id");
+                Integer employeeBranchId = (Integer) branchIdObj;
+                
+                if (orderBranchId == null || !orderBranchId.equals(employeeBranchId)) {
+                    conn.rollback();
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Unauthorized. You can only record payments for orders from your assigned branch.", 403);
+                    return;
                 }
             }
             

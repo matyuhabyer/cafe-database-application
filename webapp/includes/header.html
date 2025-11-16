@@ -9,12 +9,12 @@
     <a href="products.html">Menu</a>
     <a href="cart.html">Cart</a>
     <a href="orders.html">Orders</a>
+    <a href="profile.html" id="profileLink">Profile</a>
     <a href="admin.html" id="adminLink" style="display:none;">Admin</a>
   </nav>
 
   <div class="user-section">
-    <span id="userRole">Guest</span>
-    <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
+    <span id="userRole" style="display:none;">Guest</span>
   </div>
 </header>
 
@@ -23,7 +23,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #5a3825 0%, #7a5239 100%);
+    background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
     color: #fff;
     padding: 15px 40px;
     position: sticky;
@@ -69,6 +69,23 @@
     background: rgba(255,255,255,0.1);
   }
   
+  .navbar .logout-btn {
+    background: #d4a574;
+    color: #3e2723;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+    font-size: 1rem;
+    margin-left: 10px;
+  }
+  
+  .navbar .logout-btn:hover {
+    background: #c9a961;
+  }
+  
   .user-section {
     display: flex;
     align-items: center;
@@ -83,8 +100,8 @@
   }
   
   .logout-btn {
-    background: #f3c99b;
-    color: #5a3825;
+    background: #d4a574;
+    color: #3e2723;
     padding: 8px 20px;
     border: none;
     border-radius: 6px;
@@ -94,7 +111,7 @@
   }
   
   .logout-btn:hover {
-    background: #fff;
+    background: #c9a961;
   }
   
   @media (max-width: 768px) {

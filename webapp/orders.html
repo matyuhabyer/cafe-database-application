@@ -14,7 +14,7 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f5f5;
+      background: #f5f5dc;
       min-height: 100vh;
     }
     
@@ -25,24 +25,25 @@
     }
     
     h2 {
-      color: #5a3825;
+      color: #6d4c41;
       font-size: 2rem;
       margin-bottom: 30px;
       text-align: center;
     }
     
     .order {
-      background: white;
+      background: #faf8f3;
       border-radius: 15px;
       padding: 25px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
       transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid #d7ccc8;
     }
     
     .order:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.12);
     }
     
     .order-header {
@@ -51,11 +52,11 @@
       align-items: center;
       margin-bottom: 15px;
       padding-bottom: 15px;
-      border-bottom: 2px solid #e0e0e0;
+      border-bottom: 2px solid #d7ccc8;
     }
     
     .order-header h4 {
-      color: #5a3825;
+      color: #6d4c41;
       font-size: 1.5rem;
       margin: 0;
     }
@@ -118,26 +119,28 @@
     }
     
     .btn-view-details {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
       color: white;
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.3s;
     }
     
     .btn-view-details:hover {
       transform: scale(1.05);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
     }
     
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      background: white;
+      background: #faf8f3;
       border-radius: 15px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
     }
     
     .empty-state h3 {
@@ -153,17 +156,18 @@
     
     .empty-state a {
       display: inline-block;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
       color: white;
       padding: 12px 30px;
       border-radius: 8px;
       text-decoration: none;
       font-weight: 600;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.3s;
     }
     
     .empty-state a:hover {
       transform: scale(1.05);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
     }
     
     .loading {
@@ -188,7 +192,17 @@
   <div id="header-container"></div>
 
   <main>
-    <h2>📦 Your Order History</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+      <h2 style="margin: 0;">📦 Your Order History</h2>
+      <div class="currency" style="display: flex; align-items: center; gap: 10px;">
+        <label for="currency" style="font-weight: 600; color: #6d4c41;">Currency:</label>
+        <select id="currency" style="padding: 10px 15px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer; transition: border-color 0.3s;">
+          <option value="PHP">PHP</option>
+          <option value="USD">USD</option>
+          <option value="KRW">KRW</option>
+        </select>
+      </div>
+    </div>
     <div id="orderHistory" class="loading">Loading orders...</div>
   </main>
 
@@ -207,6 +221,38 @@
     console.log('Base URL:', BASE_URL);
     console.log('API Base:', API_BASE);
     
+    let selectedCurrency = localStorage.getItem('selectedCurrency') || 'PHP';
+    let currencies = [];
+    const currencySelect = document.getElementById('currency');
+    
+    // Fetch currencies
+    async function fetchCurrencies() {
+      try {
+        const response = await fetch(`${API_BASE}/menu/get_currencies`);
+        const result = await response.json();
+        
+        if (result.success) {
+          currencies = result.data;
+          const storedCurrency = localStorage.getItem('selectedCurrency');
+          selectedCurrency = storedCurrency || 'PHP';
+          if (currencySelect) {
+            currencySelect.value = selectedCurrency;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching currencies:', error);
+      }
+    }
+    
+    // Currency change handler
+    if (currencySelect) {
+      currencySelect.addEventListener('change', (e) => {
+        selectedCurrency = e.target.value;
+        localStorage.setItem('selectedCurrency', selectedCurrency);
+        loadOrders();
+      });
+    }
+    
     async function loadOrders() {
       try {
         const response = await fetch(`${API_BASE}/orders/get_orders`, {
@@ -216,6 +262,11 @@
         const container = document.getElementById('orderHistory');
         
         if (result.success && result.data && result.data.length > 0) {
+          // Get currency info
+          const currency = currencies.find(c => c.code === selectedCurrency) || currencies.find(c => c.code === 'PHP') || { symbol: '₱', rate: 1 };
+          const symbol = currency.symbol || '₱';
+          const rate = currency.rate || 1;
+          
           container.innerHTML = result.data.map(order => {
             const statusClass = `status-${order.status}`;
             const date = new Date(order.order_date).toLocaleDateString('en-US', {
@@ -225,6 +276,7 @@
               hour: '2-digit',
               minute: '2-digit'
             });
+            const totalAmount = parseFloat(order.total_amount || 0) * rate;
             
             return `
               <div class="order">
@@ -239,7 +291,7 @@
                   </div>
                   <div class="order-detail-item">
                     <label>Total Amount</label>
-                    <span>₱${parseFloat(order.total_amount || 0).toFixed(2)}</span>
+                    <span>${symbol}${totalAmount.toFixed(2)}</span>
                   </div>
                   <div class="order-detail-item">
                     <label>Points Earned</label>
@@ -277,7 +329,18 @@
       window.location.href = `order_details.html?order_id=${orderId}`;
     }
     
-    loadOrders();
+    fetchCurrencies().then(() => {
+      loadOrders();
+    });
+  </script>
+  
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: require customer login
+    document.addEventListener('DOMContentLoaded', function() {
+      applyPageAccessControl();
+    });
   </script>
 
 </body>

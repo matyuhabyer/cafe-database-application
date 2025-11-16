@@ -71,6 +71,8 @@ public class UpdateOrderStatusServlet extends HttpServlet {
         }
         
         int employeeId = SessionUtil.getUserId(session);
+        String role = (String) session.getAttribute("role");
+        Object branchIdObj = session.getAttribute("branch_id");
         
         Connection conn = DatabaseConfig.getDBConnection();
         if (conn == null) {
@@ -81,8 +83,8 @@ public class UpdateOrderStatusServlet extends HttpServlet {
         try {
             conn.setAutoCommit(false);
             
-            // Verify order exists
-            String checkQuery = "SELECT order_id, status, customer_id, loyalty_id, total_amount " +
+            // Verify order exists and get branch_id
+            String checkQuery = "SELECT order_id, status, customer_id, loyalty_id, total_amount, branch_id " +
                               "FROM OrderTbl WHERE order_id = ?";
             Map<String, Object> order = null;
             try (PreparedStatement stmt = conn.prepareStatement(checkQuery)) {
@@ -99,6 +101,42 @@ public class UpdateOrderStatusServlet extends HttpServlet {
                     order.put("customer_id", rs.getInt("customer_id"));
                     order.put("loyalty_id", rs.getObject("loyalty_id"));
                     order.put("total_amount", rs.getDouble("total_amount"));
+                    order.put("branch_id", rs.getObject("branch_id"));
+                }
+            }
+            
+            // Business Rule: Branch restriction - Staff/Managers can only process orders from their branch
+            // Admin can process orders from any branch
+            if (!"admin".equals(role) && branchIdObj != null) {
+                Integer orderBranchId = (Integer) order.get("branch_id");
+                Integer employeeBranchId = (Integer) branchIdObj;
+                
+                if (orderBranchId == null || !orderBranchId.equals(employeeBranchId)) {
+                    conn.rollback();
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Unauthorized. You can only process orders from your assigned branch.", 403);
+                    return;
+                }
+            }
+            
+            // Business Rule: Orders must have at least one transaction before being marked as "completed"
+            if ("completed".equals(status)) {
+                String transactionCheckQuery = "SELECT COUNT(*) as transaction_count " +
+                                             "FROM TransactionTbl " +
+                                             "WHERE order_id = ? AND status = 'completed'";
+                try (PreparedStatement stmt = conn.prepareStatement(transactionCheckQuery)) {
+                    stmt.setInt(1, orderId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            int transactionCount = rs.getInt("transaction_count");
+                            if (transactionCount == 0) {
+                                conn.rollback();
+                                ResponseUtil.sendErrorResponse(response, 
+                                    "Cannot complete order. Order must have at least one completed transaction before being marked as completed.", 400);
+                                return;
+                            }
+                        }
+                    }
                 }
             }
             
@@ -121,11 +159,12 @@ public class UpdateOrderStatusServlet extends HttpServlet {
                 stmt.executeUpdate();
             }
             
-            // If order is completed, update loyalty points
+            // Business Rule: Loyalty Points - Customers earn 1 point per ₱50.00 spent on completed transactions
+            // totalAmount is stored in PHP in the database
             int pointsEarned = 0;
             if ("completed".equals(status) && order.get("loyalty_id") != null) {
                 double totalAmount = (Double) order.get("total_amount");
-                pointsEarned = (int) Math.floor(totalAmount / 50);
+                pointsEarned = (int) Math.floor(totalAmount / 50); // 1 point per ₱50.00
                 
                 if (pointsEarned > 0) {
                     int loyaltyId = (Integer) order.get("loyalty_id");

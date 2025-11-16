@@ -10,8 +10,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/ClientSide/css.css to edit this t
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0;
-  background: #fafafa;
-  color: #333;
+  background: #f5f5dc;
+  color: #3e2723;
 }
 
 h1, h2, h3, h4 {
@@ -23,12 +23,13 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #5a3825;
+  background-color: #6d4c41;
   color: #fff;
   padding: 10px 40px;
   position: sticky;
   top: 0;
   z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .main-header .logo {
@@ -55,7 +56,7 @@ h1, h2, h3, h4 {
 }
 
 .navbar a:hover {
-  color: #f3c99b;
+  color: #d4a574;
 }
 
 .user-section {
@@ -65,17 +66,18 @@ h1, h2, h3, h4 {
 }
 
 .logout-btn {
-  background: #f3c99b;
-  color: #5a3825;
+  background: #d4a574;
+  color: #3e2723;
   padding: 5px 10px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
+  transition: background 0.3s;
 }
 
 .logout-btn:hover {
-  background: #fff;
+  background: #c9a961;
 }
 
 /* ===== GENERAL LAYOUT ===== */
@@ -98,15 +100,16 @@ input, select, button {
 }
 
 button {
-  background: #5a3825;
+  background: #6d4c41;
   color: white;
   border: none;
   cursor: pointer;
   border-radius: 5px;
+  transition: background 0.3s;
 }
 
 button:hover {
-  background: #7a5239;
+  background: #8b6f47;
 }
 
 /* ===== PRODUCTS ===== */
@@ -119,12 +122,12 @@ button:hover {
 }
 
 .product {
-  border: 1px solid #ccc;
+  border: 1px solid #d7ccc8;
   border-radius: 10px;
   padding: 15px;
   width: 180px;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: #faf8f3;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
   text-align: center;
 }
 
@@ -139,13 +142,13 @@ button:hover {
 
 /* ===== ORDER LIST ===== */
 .order {
-  border: 1px solid #ccc;
+  border: 1px solid #d7ccc8;
   margin: 10px auto;
   width: 300px;
   padding: 10px;
   border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: #faf8f3;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 
