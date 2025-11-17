@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Waiting Room Café | Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc6 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .login-wrapper {
+      width: 100%;
+      max-width: 450px;
+    }
+    
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .login-header {
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    
+    .login-header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .login-header p {
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    
+    .login-body {
+      padding: 40px 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #8b6f47;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+    }
+    
+    .login-button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(109, 76, 65, 0.3);
+    }
+    
+    .login-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(109, 76, 65, 0.4);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
+    }
+    
+    .login-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    .login-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .register-link {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 25px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    .register-link p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .register-link a {
+      color: #6d4c41;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    
+    .register-link a:hover {
+      color: #8b6f47;
+      text-decoration: underline;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c33;
+      display: none;
+      font-size: 0.9rem;
+    }
+    
+    .error-message.show {
+      display: block;
+      animation: shake 0.5s ease;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3c3;
+      display: none;
+      font-size: 0.9rem;
+    }
+    
+    .success-message.show {
+      display: block;
+    }
+    
+    @media (max-width: 480px) {
+      .login-header {
+        padding: 30px 20px;
+      }
+      
+      .login-body {
+        padding: 30px 20px;
+      }
+      
+      .login-header h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>☕ The Waiting Room Café</h1>
+        <p>Welcome back! Please login to continue</p>
+      </div>
+      
+      <div class="login-body">
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <form id="loginForm" method="post">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              placeholder="Enter your username" 
+              required 
+              autocomplete="username"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Enter your password" 
+              required 
+              autocomplete="current-password"
+            >
+          </div>
+          
+          <button type="submit" class="login-button" id="loginButton">
+            Login
+          </button>
+        </form>
+        
+        <div class="register-link">
+          <p>Don't have an account? <a href="register.html">Register here</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get context path - same method as test-servlets.html
+    const BASE_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+    const API_BASE = BASE_URL + '/api/auth';
+    
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Base URL:', BASE_URL);
+    console.log('API Base:', API_BASE);
+    console.log('Full login URL:', API_BASE + '/login');
+    
+    // Test connection on page load
+    async function testConnection() {
+      try {
+        const testUrl = BASE_URL + '/api/menu/get_categories';
+        console.log('Testing connection to:', testUrl);
+        const response = await fetch(testUrl, { method: 'GET' });
+        console.log('Connection test status:', response.status);
+        return response.ok;
+      } catch (error) {
+        console.error('Connection test failed:', error);
+        return false;
+      }
+    }
+    
+    // Run connection test
+    testConnection().then(connected => {
+      if (!connected) {
+        console.warn('⚠️ Server connection test failed. The server may not be running.');
+      }
+    });
+    
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('show');
+      successMessage.classList.remove('show');
+      setTimeout(() => {
+        errorMessage.classList.remove('show');
+      }, 5000);
+    }
+    
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.add('show');
+      errorMessage.classList.remove('show');
+    }
+    
+    function hideMessages() {
+      errorMessage.classList.remove('show');
+      successMessage.classList.remove('show');
+    }
+    
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideMessages();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      
+      if (!username || !password) {
+        showError('Please fill in all fields');
+        return;
+      }
+      
+      console.log('Login attempt:', { username, passwordLength: password.length });
+      
+      // Show loading state
+      const originalText = loginButton.textContent;
+      loginButton.disabled = true;
+      loginButton.textContent = 'Logging in...';
+      
+      try {
+        const loginUrl = `${API_BASE}/login`;
+        console.log('Attempting to connect to:', loginUrl);
+        console.log('Full URL:', window.location.origin + loginUrl);
+        
+        const response = await fetch(loginUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ username, password })
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        if (!response.ok) {
+          console.error('HTTP Error:', response.status, response.statusText);
+          const errorText = await response.text();
+          console.error('Error response body:', errorText);
+          try {
+            const errorJson = JSON.parse(errorText);
+            showError(errorJson.message || `Server error: ${response.status} ${response.statusText}`);
+            return;
+          } catch (e) {
+            showError(`Server error: ${response.status} ${response.statusText}`);
+            return;
+          }
+        }
+        
+        const result = await response.json();
+        console.log('Login response:', result);
+        
+        if (result.success) {
+          showSuccess('Login successful! Redirecting...');
+          const userRole = result.data.role || 'customer';
+          localStorage.setItem('role', userRole);
+          localStorage.setItem('user', JSON.stringify(result.data));
+          
+          // Redirect after short delay
+          setTimeout(() => {
+            if (userRole === 'customer') {
+              window.location.href = 'products.html';
+            } else {
+              window.location.href = 'admin.html';
+            }
+          }, 500);
+        } else {
+          showError(result.message || result.error || 'Login failed. Please check your credentials.');
+          console.error('Login failed:', result);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        let errorMsg = 'Error connecting to server. ';
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          errorMsg += 'The server may not be running or the URL is incorrect. ';
+          errorMsg += `Tried to connect to: ${API_BASE}/login`;
+        } else if (error.message) {
+          errorMsg += error.message;
+        } else {
+          errorMsg += 'Please check your connection and try again.';
+        }
+        
+        showError(errorMsg);
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = originalText;
+      }
+    });
+    
+    // Clear error on input
+    ['username', 'password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', hideMessages);
+    });
+  </script>
+  
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: allow guests, redirect if already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      applyPageAccessControl();
+    });
+  </script>
+
+</body>
+</html>

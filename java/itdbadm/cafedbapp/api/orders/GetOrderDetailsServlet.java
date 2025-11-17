@@ -112,10 +112,13 @@ public class GetOrderDetailsServlet extends HttpServlet {
             }
             
             // Get order items
+            // Use LEFT JOIN for Menu in case menu item was deleted, but still show the order item
             String itemsQuery = "SELECT oi.order_item_id, oi.menu_id, oi.quantity, oi.price, " +
-                              "m.name as menu_name, m.description, do.temperature, do.price_modifier " +
+                              "COALESCE(m.name, 'Unknown Item') as menu_name, " +
+                              "COALESCE(m.description, '') as description, " +
+                              "do.temperature, do.price_modifier " +
                               "FROM OrderItem oi " +
-                              "INNER JOIN Menu m ON oi.menu_id = m.menu_id " +
+                              "LEFT JOIN Menu m ON oi.menu_id = m.menu_id " +
                               "LEFT JOIN DrinkOption do ON oi.drink_option_id = do.drink_option_id " +
                               "WHERE oi.order_id = ?";
             
@@ -126,13 +129,34 @@ public class GetOrderDetailsServlet extends HttpServlet {
                     while (rs.next()) {
                         Map<String, Object> item = new HashMap<>();
                         int orderItemId = rs.getInt("order_item_id");
+                        int quantity = rs.getInt("quantity");
+                        double price = rs.getDouble("price");
+                        int menuId = rs.getInt("menu_id");
+                        String menuName = rs.getString("menu_name");
+                        String description = rs.getString("description");
+                        String temperature = rs.getString("temperature");
+                        
+                        // Debug logging
+                        System.out.println("GetOrderDetailsServlet: Processing order item - order_item_id: " + orderItemId + 
+                            ", menu_id: " + menuId + ", menu_name: " + menuName);
+                        
+                        // Handle null menu name - fallback to description or menu_id if name is null
+                        if (menuName == null || menuName.trim().isEmpty()) {
+                            System.err.println("GetOrderDetailsServlet: WARNING - menu_name is null for menu_id: " + menuId);
+                            menuName = description != null && !description.trim().isEmpty() 
+                                ? description 
+                                : "Menu Item #" + menuId;
+                        }
+                        
                         item.put("order_item_id", orderItemId);
-                        item.put("menu_id", rs.getInt("menu_id"));
-                        item.put("menu_name", rs.getString("menu_name"));
-                        item.put("description", rs.getString("description"));
-                        item.put("quantity", rs.getInt("quantity"));
-                        item.put("price", Math.round(rs.getDouble("price") * 100.0) / 100.0);
-                        item.put("temperature", rs.getString("temperature"));
+                        item.put("menu_id", menuId);
+                        item.put("name", menuName);  // Use "name" to match frontend expectation
+                        item.put("menu_name", menuName);  // Keep for backward compatibility
+                        item.put("description", description != null ? description : "");
+                        item.put("quantity", quantity);
+                        item.put("price", Math.round(price * 100.0) / 100.0);
+                        item.put("total_price", Math.round(price * quantity * 100.0) / 100.0);  // Calculate total price (price * quantity)
+                        item.put("temperature", temperature != null ? temperature : "");
                         item.put("extras", new ArrayList<>());
                         
                         // Get extras for this order item
@@ -160,6 +184,13 @@ public class GetOrderDetailsServlet extends HttpServlet {
                 }
             }
             orderDetails.put("items", items);
+            
+            // Debug logging - log what we're sending
+            System.out.println("GetOrderDetailsServlet: Sending order details with " + items.size() + " items");
+            for (Map<String, Object> item : items) {
+                System.out.println("GetOrderDetailsServlet: Item - menu_id: " + item.get("menu_id") + 
+                    ", name: " + item.get("name") + ", menu_name: " + item.get("menu_name"));
+            }
             
             // Get order history
             String historyQuery = "SELECT oh.history_id, oh.status, oh.timestamp, oh.remarks, " +

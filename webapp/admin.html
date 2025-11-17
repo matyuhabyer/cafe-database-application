@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel - The Waiting Room Café</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -51,6 +52,20 @@
       margin-bottom: 20px;
       padding-bottom: 15px;
       border-bottom: 3px solid #8b6f47;
+    }
+    
+    select {
+      transition: border-color 0.3s;
+    }
+    
+    select:hover {
+      border-color: #8b6f47;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #6d4c41;
+      box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
     }
     
     .branch-item {
@@ -201,7 +216,7 @@
       flex-wrap: wrap;
     }
     
-    .btn-confirm, .btn-complete, .btn-view {
+    .btn-confirm, .btn-complete, .btn-cancel, .btn-view {
       padding: 8px 16px;
       border: none;
       border-radius: 6px;
@@ -226,6 +241,15 @@
     
     .btn-complete:hover {
       background: #218838;
+    }
+    
+    .btn-cancel {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-cancel:hover {
+      background: #c82333;
     }
     
     .btn-view {
@@ -282,8 +306,30 @@
           <div id="branchesList" class="loading">Loading branches...</div>
         </div>
         
+        <div class="admin-section" id="analyticsSection" style="display: none;">
+          <h3>📈 Analytics</h3>
+          <div style="margin-bottom: 20px;">
+            <label for="analyticsPeriod" style="display: block; margin-bottom: 10px; font-weight: 600; color: #6d4c41;">Period:</label>
+            <select id="analyticsPeriod" style="width: 100%; padding: 10px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+              <option value="">Select Period</option>
+              <option value="weekly">Weekly Sales</option>
+              <option value="monthly">Monthly Sales</option>
+              <option value="annual">Annual Sales</option>
+            </select>
+          </div>
+          <div id="analyticsContent" class="loading">Select a period to view analytics...</div>
+        </div>
+        
         <div class="admin-section" id="reportsSection">
           <h3>📊 Reports</h3>
+          <div style="margin-bottom: 20px;">
+            <label for="reportType" style="display: block; margin-bottom: 10px; font-weight: 600; color: #6d4c41;">Report Type:</label>
+            <select id="reportType" style="width: 100%; padding: 10px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+              <option value="items">Top Selling Items</option>
+              <option value="foods">Top Selling Foods</option>
+              <option value="drinks">Top Selling Drinks</option>
+            </select>
+          </div>
           <div id="reportsContent" class="loading">Loading reports...</div>
         </div>
       </div>

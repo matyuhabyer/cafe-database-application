@@ -79,13 +79,13 @@ public class GetMenuServlet extends HttpServlet {
                 System.out.println("✅ Found " + categoryCount + " categories in database");
             }
             
-            // Get menu items
+            // Get menu items - return ALL items (both available and unavailable)
+            // Frontend will handle displaying unavailable items with visual indicators
             String menuQuery = "SELECT m.menu_id, m.category_id, m.name, m.description, " +
                              "m.price_amount, m.is_drink, m.is_available, " +
                              "c.name as category_name " +
                              "FROM Menu m " +
                              "INNER JOIN Category c ON m.category_id = c.category_id " +
-                             "WHERE m.is_available = 1 " +
                              "ORDER BY c.name, m.name";
             
             System.out.println("Querying menu items from database...");
@@ -102,6 +102,8 @@ public class GetMenuServlet extends HttpServlet {
                     double convertedPrice = basePrice * currencyRate;
                     
                     Map<String, Object> menuItem = new HashMap<>();
+                    boolean isAvailable = rs.getBoolean("is_available");
+                    
                     menuItem.put("menu_id", menuId);
                     menuItem.put("name", rs.getString("name"));
                     menuItem.put("description", rs.getString("description"));
@@ -110,6 +112,7 @@ public class GetMenuServlet extends HttpServlet {
                     menuItem.put("currency_code", currency.get("code"));
                     menuItem.put("currency_symbol", currency.get("symbol"));
                     menuItem.put("is_drink", rs.getBoolean("is_drink"));
+                    menuItem.put("is_available", isAvailable);  // Include availability status
                     menuItem.put("drink_options", new ArrayList<>());
                     menuItem.put("available_extras", new ArrayList<>());
                     menuItem.put("legends", new ArrayList<>());

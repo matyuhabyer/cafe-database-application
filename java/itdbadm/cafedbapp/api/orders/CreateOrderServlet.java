@@ -70,8 +70,6 @@ public class CreateOrderServlet extends HttpServlet {
         }
         
         try {
-            conn.setAutoCommit(false);
-            
             // Get customer's loyalty card
             Integer loyaltyId = null;
             String loyaltyQuery = "SELECT loyalty_id FROM LoyaltyCard WHERE customer_id = ? AND is_active = 1";
@@ -84,160 +82,102 @@ public class CreateOrderServlet extends HttpServlet {
                 }
             }
             
-            // Calculate total amount
-            double totalAmount = 0;
+            // Validate items have required fields
             for (int i = 0; i < items.size(); i++) {
                 JsonObject item = items.get(i).getAsJsonObject();
-                if (!item.has("menu_id") || !item.has("quantity") || !item.has("price")) {
-                    conn.rollback();
-                    ResponseUtil.sendErrorResponse(response, "Invalid item data", 400);
+                if (!item.has("menu_id") || !item.has("quantity")) {
+                    ResponseUtil.sendErrorResponse(response, "Invalid item data: menu_id and quantity required", 400);
                     return;
                 }
-                double itemTotal = item.get("price").getAsDouble() * item.get("quantity").getAsInt();
-                totalAmount += itemTotal;
             }
             
-            // Create order
-            String orderQuery = "INSERT INTO OrderTbl (customer_id, loyalty_id, branch_id, total_amount, status) " +
-                              "VALUES (?, ?, ?, ?, 'pending')";
+            // Convert items JSON array to JSON string for stored procedure
+            // The stored procedure expects JSON format with menu_id, quantity, drink_option_id, and extras
+            String itemsJson = items.toString();
+            
+            // Call stored procedure sp_create_order
+            // Stored procedure handles: order creation, item insertion, extras, and triggers handle price/total calculation
+            String callQuery = "{CALL sp_create_order(?, ?, ?, ?, ?)}";
             int orderId;
-            try (PreparedStatement stmt = conn.prepareStatement(orderQuery, Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setInt(1, customerId);
-                if (loyaltyId != null) {
-                    stmt.setInt(2, loyaltyId);
-                } else {
-                    stmt.setNull(2, Types.INTEGER);
-                }
-                stmt.setInt(3, branchId);
-                stmt.setDouble(4, totalAmount);
-                
-                int rowsAffected = stmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    conn.rollback();
-                    ResponseUtil.sendErrorResponse(response, "Failed to create order", 500);
-                    return;
-                }
-                
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        orderId = generatedKeys.getInt(1);
-                    } else {
-                        conn.rollback();
-                        ResponseUtil.sendErrorResponse(response, "Failed to create order", 500);
-                        return;
-                    }
-                }
-            }
+            double finalTotal = 0;
             
-            // Insert order items
-            for (int i = 0; i < items.size(); i++) {
-                JsonObject item = items.get(i).getAsJsonObject();
-                int menuId = item.get("menu_id").getAsInt();
-                int quantity = item.get("quantity").getAsInt();
-                double price = item.get("price").getAsDouble();
-                Integer drinkOptionId = item.has("drink_option_id") && !item.get("drink_option_id").isJsonNull() 
-                                       ? item.get("drink_option_id").getAsInt() : null;
+            try (CallableStatement cstmt = conn.prepareCall(callQuery)) {
+                cstmt.setInt(1, customerId);  // p_customer_id
+                cstmt.setNull(2, Types.INTEGER);  // p_employee_id (NULL for customer orders)
+                cstmt.setInt(3, branchId);  // p_branch_id
+                if (loyaltyId != null) {
+                    cstmt.setInt(4, loyaltyId);  // p_loyalty_id
+                } else {
+                    cstmt.setNull(4, Types.INTEGER);  // p_loyalty_id
+                }
+                cstmt.setString(5, itemsJson);  // p_items JSON
                 
-                // Insert order item
-                String itemQuery = "INSERT INTO OrderItem (order_id, menu_id, drink_option_id, quantity, price) " +
-                                 "VALUES (?, ?, ?, ?, ?)";
-                int orderItemId;
-                try (PreparedStatement stmt = conn.prepareStatement(itemQuery, Statement.RETURN_GENERATED_KEYS)) {
-                    stmt.setInt(1, orderId);
-                    stmt.setInt(2, menuId);
-                    if (drinkOptionId != null) {
-                        stmt.setInt(3, drinkOptionId);
-                    } else {
-                        stmt.setNull(3, Types.INTEGER);
-                    }
-                    stmt.setInt(4, quantity);
-                    stmt.setDouble(5, price);
-                    
-                    int rowsAffected = stmt.executeUpdate();
-                    if (rowsAffected == 0) {
-                        conn.rollback();
-                        ResponseUtil.sendErrorResponse(response, "Failed to create order item", 500);
-                        return;
-                    }
-                    
-                    try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
-                            orderItemId = generatedKeys.getInt(1);
+                // Execute stored procedure
+                cstmt.execute();
+                
+                // Get the order_id that was just created by the stored procedure
+                // Query the most recent pending order for this customer at this branch
+                String orderIdQuery = "SELECT order_id FROM OrderTbl WHERE customer_id = ? AND branch_id = ? AND status = 'pending' ORDER BY order_id DESC LIMIT 1";
+                try (PreparedStatement stmt = conn.prepareStatement(orderIdQuery)) {
+                    stmt.setInt(1, customerId);
+                    stmt.setInt(2, branchId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            orderId = rs.getInt("order_id");
                         } else {
-                            conn.rollback();
-                            ResponseUtil.sendErrorResponse(response, "Failed to create order item", 500);
+                            ResponseUtil.sendErrorResponse(response, "Failed to create order - no order ID returned", 500);
                             return;
                         }
                     }
                 }
                 
-                // Insert order item extras if any
-                if (item.has("extras") && item.get("extras").isJsonArray()) {
-                    JsonArray extras = item.getAsJsonArray("extras");
-                    for (int j = 0; j < extras.size(); j++) {
-                        JsonObject extra = extras.get(j).getAsJsonObject();
-                        if (extra.has("extra_id") && extra.has("quantity")) {
-                            String extraQuery = "INSERT INTO OrderItemExtra (order_item_id, extra_id, quantity) " +
-                                             "VALUES (?, ?, ?)";
-                            try (PreparedStatement extraStmt = conn.prepareStatement(extraQuery)) {
-                                extraStmt.setInt(1, orderItemId);
-                                extraStmt.setInt(2, extra.get("extra_id").getAsInt());
-                                extraStmt.setInt(3, extra.get("quantity").getAsInt());
-                                
-                                int rowsAffected = extraStmt.executeUpdate();
-                                if (rowsAffected == 0) {
-                                    conn.rollback();
-                                    ResponseUtil.sendErrorResponse(response, "Failed to add extra to order item", 500);
-                                    return;
-                                }
-                            }
+                // Get final total_amount calculated by triggers
+                String totalQuery = "SELECT total_amount FROM OrderTbl WHERE order_id = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(totalQuery)) {
+                    stmt.setInt(1, orderId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            finalTotal = rs.getDouble("total_amount");
                         }
                     }
                 }
             }
             
-            // Create initial order history entry
-            String historyQuery = "INSERT INTO OrderHistory (order_id, status, remarks) " +
-                                "VALUES (?, 'pending', 'Order created by customer')";
-            try (PreparedStatement historyStmt = conn.prepareStatement(historyQuery)) {
-                historyStmt.setInt(1, orderId);
-                int rowsAffected = historyStmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    conn.rollback();
-                    ResponseUtil.sendErrorResponse(response, "Failed to create order history", 500);
-                    return;
-                }
-            }
-            
-            // Commit transaction
-            conn.commit();
-            
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("order_id", orderId);
-            responseData.put("total_amount", Math.round(totalAmount * 100.0) / 100.0);
+            responseData.put("total_amount", Math.round(finalTotal * 100.0) / 100.0);
             responseData.put("status", "pending");
             
             ResponseUtil.sendJSONResponse(response, responseData, 201, "Order created successfully");
             
         } catch (SQLException e) {
-            try {
-                if (conn != null && !conn.getAutoCommit()) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-                System.err.println("Error rolling back transaction: " + ex.getMessage());
-            }
             System.err.println("Create order error: " + e.getMessage());
             e.printStackTrace();
-            ResponseUtil.sendErrorResponse(response, "An error occurred while creating order", 500);
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
+            
+            // Handle stored procedure and trigger violations with better error messages
+            String errorMsg = e.getMessage();
+            if (errorMsg != null) {
+                if (errorMsg.contains("Menu price must be greater than zero")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Invalid menu item: " + errorMsg, 400);
+                } else if (errorMsg.contains("extra") || errorMsg.contains("Extra")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Extra validation error: " + errorMsg, 400);
+                } else if (errorMsg.contains("Order item does not exist")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Invalid order item: " + errorMsg, 400);
+                } else if (errorMsg.contains("SQLSTATE")) {
+                    // Stored procedure error
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Order creation failed: " + errorMsg, 500);
+                } else {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "An error occurred while creating order: " + errorMsg, 500);
                 }
-            } catch (SQLException e) {
-                System.err.println("Error resetting auto-commit: " + e.getMessage());
+            } else {
+                ResponseUtil.sendErrorResponse(response, "An error occurred while creating order", 500);
             }
+        } finally {
             DatabaseConfig.closeDBConnection(conn);
         }
     }

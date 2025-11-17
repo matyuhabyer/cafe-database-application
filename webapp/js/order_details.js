@@ -266,6 +266,18 @@ function renderOrderItems(items) {
         return '<p style="color: #666; padding: 15px;">No items in this order.</p>';
     }
     
+    // Debug logging
+    console.log('renderOrderItems: Processing', items.length, 'items');
+    items.forEach((item, index) => {
+        console.log(`Item ${index}:`, {
+            menu_id: item.menu_id,
+            name: item.name,
+            menu_name: item.menu_name,
+            hasName: 'name' in item,
+            nameValue: item.name
+        });
+    });
+    
     return items.map(item => {
         const itemPrice = parseFloat(item.price || 0).toFixed(2);
         const itemTotal = parseFloat(item.total_price || item.price || 0).toFixed(2);

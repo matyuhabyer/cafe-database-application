@@ -70,7 +70,12 @@ public class UpdateOrderStatusServlet extends HttpServlet {
             return;
         }
         
-        int employeeId = SessionUtil.getUserId(session);
+        Integer employeeIdObj = SessionUtil.getUserId(session);
+        if (employeeIdObj == null) {
+            ResponseUtil.sendErrorResponse(response, "Unauthorized. Invalid session.", 401);
+            return;
+        }
+        int employeeId = employeeIdObj;
         String role = (String) session.getAttribute("role");
         Object branchIdObj = session.getAttribute("branch_id");
         
@@ -81,9 +86,8 @@ public class UpdateOrderStatusServlet extends HttpServlet {
         }
         
         try {
-            conn.setAutoCommit(false);
-            
-            // Verify order exists and get branch_id
+            // Verify order exists and get status for validation
+            // Stored procedure will also validate order existence, but we check here for early validation
             String checkQuery = "SELECT order_id, status, customer_id, loyalty_id, total_amount, branch_id " +
                               "FROM OrderTbl WHERE order_id = ?";
             Map<String, Object> order = null;
@@ -91,7 +95,6 @@ public class UpdateOrderStatusServlet extends HttpServlet {
                 stmt.setInt(1, orderId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
-                        conn.rollback();
                         ResponseUtil.sendErrorResponse(response, "Order not found", 404);
                         return;
                     }
@@ -105,21 +108,9 @@ public class UpdateOrderStatusServlet extends HttpServlet {
                 }
             }
             
-            // Business Rule: Branch restriction - Staff/Managers can only process orders from their branch
-            // Admin can process orders from any branch
-            if (!"admin".equals(role) && branchIdObj != null) {
-                Integer orderBranchId = (Integer) order.get("branch_id");
-                Integer employeeBranchId = (Integer) branchIdObj;
-                
-                if (orderBranchId == null || !orderBranchId.equals(employeeBranchId)) {
-                    conn.rollback();
-                    ResponseUtil.sendErrorResponse(response, 
-                        "Unauthorized. You can only process orders from your assigned branch.", 403);
-                    return;
-                }
-            }
-            
             // Business Rule: Orders must have at least one transaction before being marked as "completed"
+            // This check is kept here as it's business logic validation before calling the stored procedure
+            // The stored procedure handles authorization and status transitions
             if ("completed".equals(status)) {
                 String transactionCheckQuery = "SELECT COUNT(*) as transaction_count " +
                                              "FROM TransactionTbl " +
@@ -130,7 +121,6 @@ public class UpdateOrderStatusServlet extends HttpServlet {
                         if (rs.next()) {
                             int transactionCount = rs.getInt("transaction_count");
                             if (transactionCount == 0) {
-                                conn.rollback();
                                 ResponseUtil.sendErrorResponse(response, 
                                     "Cannot complete order. Order must have at least one completed transaction before being marked as completed.", 400);
                                 return;
@@ -140,51 +130,47 @@ public class UpdateOrderStatusServlet extends HttpServlet {
                 }
             }
             
-            // Update order status
-            String updateQuery = "UPDATE OrderTbl SET status = ? WHERE order_id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
-                stmt.setString(1, status);
-                stmt.setInt(2, orderId);
-                stmt.executeUpdate();
-            }
-            
-            // Log in order history
-            String historyQuery = "INSERT INTO OrderHistory (order_id, employee_id, status, remarks) " +
-                                "VALUES (?, ?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(historyQuery)) {
-                stmt.setInt(1, orderId);
-                stmt.setInt(2, employeeId);
-                stmt.setString(3, status);
-                stmt.setString(4, remarks.isEmpty() ? "Status updated to " + status : remarks);
-                stmt.executeUpdate();
-            }
-            
-            // Business Rule: Loyalty Points - Customers earn 1 point per ₱50.00 spent on completed transactions
-            // totalAmount is stored in PHP in the database
-            int pointsEarned = 0;
-            if ("completed".equals(status) && order.get("loyalty_id") != null) {
-                double totalAmount = (Double) order.get("total_amount");
-                pointsEarned = (int) Math.floor(totalAmount / 50); // 1 point per ₱50.00
-                
-                if (pointsEarned > 0) {
-                    int loyaltyId = (Integer) order.get("loyalty_id");
-                    String pointsQuery = "UPDATE LoyaltyCard SET points = points + ? WHERE loyalty_id = ?";
-                    try (PreparedStatement stmt = conn.prepareStatement(pointsQuery)) {
-                        stmt.setInt(1, pointsEarned);
-                        stmt.setInt(2, loyaltyId);
-                        stmt.executeUpdate();
-                    }
-                    
-                    String earnedQuery = "UPDATE OrderTbl SET earned_points = ? WHERE order_id = ?";
-                    try (PreparedStatement stmt = conn.prepareStatement(earnedQuery)) {
-                        stmt.setInt(1, pointsEarned);
-                        stmt.setInt(2, orderId);
-                        stmt.executeUpdate();
-                    }
+            // Business Rule: Cannot cancel completed orders
+            // This check is kept here as it's business logic validation before calling the stored procedure
+            if ("cancelled".equals(status)) {
+                String currentStatus = (String) order.get("status");
+                if ("completed".equals(currentStatus)) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Cannot cancel a completed order. Completed orders cannot be changed.", 400);
+                    return;
                 }
             }
             
-            conn.commit();
+            // Call stored procedure sp_update_order_status
+            // Stored procedure handles: authorization checks, branch validation, status transitions, and OrderHistory logging
+            String callQuery = "{CALL sp_update_order_status(?, ?, ?, ?)}";
+            try (CallableStatement cstmt = conn.prepareCall(callQuery)) {
+                cstmt.setInt(1, orderId);  // p_order_id
+                cstmt.setString(2, status);  // p_new_status
+                cstmt.setInt(3, employeeId);  // p_employee_id
+                cstmt.setString(4, remarks);  // p_remarks
+                
+                // Execute stored procedure
+                cstmt.execute();
+                
+                System.out.println("UpdateOrderStatusServlet: Updated order " + orderId + 
+                    " status to " + status + " with employee_id " + employeeId + 
+                    " using stored procedure");
+            }
+            
+            // Get earned_points if status was changed to completed (set by trigger 5)
+            int pointsEarned = 0;
+            if ("completed".equals(status) && order.get("loyalty_id") != null) {
+                String pointsQuery = "SELECT earned_points FROM OrderTbl WHERE order_id = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(pointsQuery)) {
+                    stmt.setInt(1, orderId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            pointsEarned = rs.getInt("earned_points");
+                        }
+                    }
+                }
+            }
             
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("order_id", orderId);
@@ -194,24 +180,36 @@ public class UpdateOrderStatusServlet extends HttpServlet {
             ResponseUtil.sendJSONResponse(response, responseData, 200, "Order status updated successfully");
             
         } catch (SQLException e) {
-            try {
-                if (conn != null && !conn.getAutoCommit()) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-                System.err.println("Error rolling back: " + ex.getMessage());
-            }
             System.err.println("Update order status error: " + e.getMessage());
             e.printStackTrace();
-            ResponseUtil.sendErrorResponse(response, "An error occurred while updating order status", 500);
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
+            
+            // Handle stored procedure and trigger violations with better error messages
+            String errorMsg = e.getMessage();
+            if (errorMsg != null) {
+                if (errorMsg.contains("not authorized") || errorMsg.contains("another branch") || 
+                    errorMsg.contains("not authorized to modify orders")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Authorization error: " + errorMsg, 403);
+                } else if (errorMsg.contains("branch") || errorMsg.contains("Branch")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Branch restriction: " + errorMsg, 403);
+                } else if (errorMsg.contains("Employee not found")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Authorization error: " + errorMsg, 403);
+                } else if (errorMsg.contains("Order not found")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Order not found: " + errorMsg, 404);
+                } else if (errorMsg.contains("Cannot change status")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Status transition error: " + errorMsg, 400);
+                } else {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "An error occurred while updating order status: " + errorMsg, 500);
                 }
-            } catch (SQLException e) {
-                System.err.println("Error resetting auto-commit: " + e.getMessage());
+            } else {
+                ResponseUtil.sendErrorResponse(response, "An error occurred while updating order status", 500);
             }
+        } finally {
             DatabaseConfig.closeDBConnection(conn);
         }
     }

@@ -84,16 +84,13 @@ public class CreateTransactionServlet extends HttpServlet {
         }
         
         try {
-            conn.setAutoCommit(false);
-            
-            // Verify order exists
+            // Verify order exists and get total amount for validation
             String orderQuery = "SELECT order_id, total_amount, status, branch_id FROM OrderTbl WHERE order_id = ?";
             Map<String, Object> order = null;
             try (PreparedStatement stmt = conn.prepareStatement(orderQuery)) {
                 stmt.setInt(1, orderId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
-                        conn.rollback();
                         ResponseUtil.sendErrorResponse(response, "Order not found", 404);
                         return;
                     }
@@ -105,27 +102,13 @@ public class CreateTransactionServlet extends HttpServlet {
                 }
             }
             
-            // Business Rule: Branch restriction - Staff/Managers can only record payments for orders from their branch
-            // Admin and customers can record payments for any order
-            if (employeeId != null && !"admin".equals(role) && branchIdObj != null) {
-                Integer orderBranchId = (Integer) order.get("branch_id");
-                Integer employeeBranchId = (Integer) branchIdObj;
-                
-                if (orderBranchId == null || !orderBranchId.equals(employeeBranchId)) {
-                    conn.rollback();
-                    ResponseUtil.sendErrorResponse(response, 
-                        "Unauthorized. You can only record payments for orders from your assigned branch.", 403);
-                    return;
-                }
-            }
-            
-            // Check if order already has a completed transaction
+            // Business Rule: Check if order already has a completed transaction
+            // This check is kept here as it's business logic validation before calling the stored procedure
             String existingQuery = "SELECT transaction_id FROM TransactionTbl WHERE order_id = ? AND status = 'completed'";
             try (PreparedStatement stmt = conn.prepareStatement(existingQuery)) {
                 stmt.setInt(1, orderId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        conn.rollback();
                         ResponseUtil.sendErrorResponse(response, "Order already has a completed payment", 400);
                         return;
                     }
@@ -139,7 +122,6 @@ public class CreateTransactionServlet extends HttpServlet {
                 stmt.setInt(1, currencyId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (!rs.next()) {
-                        conn.rollback();
                         ResponseUtil.sendErrorResponse(response, "Currency not found", 404);
                         return;
                     }
@@ -147,77 +129,56 @@ public class CreateTransactionServlet extends HttpServlet {
                 }
             }
             
-            // Calculate PHP equivalent
+            // Calculate PHP equivalent and validate amount
             double amountPhp = amountPaid / exchangeRate;
             double orderTotal = (Double) order.get("total_amount");
             double tolerance = 0.01;
             
             if (Math.abs(amountPhp - orderTotal) > tolerance) {
-                conn.rollback();
                 ResponseUtil.sendErrorResponse(response, 
                     "Payment amount mismatch. Expected: ₱" + orderTotal + ", Received: ₱" + amountPhp, 400);
                 return;
             }
             
-            // Create transaction
-            String transactionQuery = "INSERT INTO TransactionTbl " +
-                                    "(order_id, currency_id, payment_method, amount_paid, exchange_rate, status, branch_id) " +
-                                    "VALUES (?, ?, ?, ?, ?, 'completed', ?)";
+            // Get employee_id if available (can be null for customer payments)
+            Integer empId = employeeId != null ? employeeId : null;
+            
+            // Call stored procedure sp_record_payment
+            // Stored procedure handles: transaction creation, branch alignment, order status update to 'confirmed' (if pending), and OrderHistory logging
+            // NOTE: Order status is NOT auto-completed - staff/admin must manually complete orders after payment is recorded
+            String callQuery = "{CALL sp_record_payment(?, ?, ?, ?, ?, ?)}";
             int transactionId;
-            try (PreparedStatement stmt = conn.prepareStatement(transactionQuery, Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setInt(1, orderId);
-                stmt.setInt(2, currencyId);
-                stmt.setString(3, paymentMethod);
-                stmt.setDouble(4, amountPaid);
-                stmt.setDouble(5, exchangeRate);
-                Object branchId = order.get("branch_id");
-                if (branchId != null) {
-                    stmt.setInt(6, (Integer) branchId);
+            
+            try (CallableStatement cstmt = conn.prepareCall(callQuery)) {
+                cstmt.setInt(1, orderId);  // p_order_id
+                cstmt.setInt(2, currencyId);  // p_currency_id
+                cstmt.setString(3, paymentMethod);  // p_payment_method
+                cstmt.setDouble(4, amountPaid);  // p_amount_paid
+                cstmt.setDouble(5, exchangeRate);  // p_exchange_rate
+                if (empId != null) {
+                    cstmt.setInt(6, empId);  // p_employee_id
                 } else {
-                    stmt.setNull(6, Types.INTEGER);
+                    cstmt.setNull(6, Types.INTEGER);  // p_employee_id (can be null for customer payments)
                 }
                 
-                int rowsAffected = stmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    conn.rollback();
-                    ResponseUtil.sendErrorResponse(response, "Failed to create transaction", 500);
-                    return;
-                }
+                // Execute stored procedure
+                cstmt.execute();
                 
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        transactionId = generatedKeys.getInt(1);
-                    } else {
-                        conn.rollback();
-                        ResponseUtil.sendErrorResponse(response, "Failed to create transaction", 500);
-                        return;
+                // Get transaction_id that was just created by the stored procedure
+                // Query the most recent completed transaction for this order
+                String transactionIdQuery = "SELECT transaction_id FROM TransactionTbl WHERE order_id = ? AND status = 'completed' ORDER BY transaction_id DESC LIMIT 1";
+                try (PreparedStatement stmt = conn.prepareStatement(transactionIdQuery)) {
+                    stmt.setInt(1, orderId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            transactionId = rs.getInt("transaction_id");
+                        } else {
+                            ResponseUtil.sendErrorResponse(response, "Failed to create transaction - no transaction ID returned", 500);
+                            return;
+                        }
                     }
                 }
             }
-            
-            // Update order status to confirmed if it's still pending
-            if ("pending".equals(order.get("status"))) {
-                String updateOrderQuery = "UPDATE OrderTbl SET status = 'confirmed' WHERE order_id = ?";
-                try (PreparedStatement stmt = conn.prepareStatement(updateOrderQuery)) {
-                    stmt.setInt(1, orderId);
-                    stmt.executeUpdate();
-                }
-                
-                // Log status change
-                String historyQuery = "INSERT INTO OrderHistory (order_id, employee_id, status, remarks) " +
-                                    "VALUES (?, ?, 'confirmed', 'Payment received')";
-                try (PreparedStatement stmt = conn.prepareStatement(historyQuery)) {
-                    stmt.setInt(1, orderId);
-                    if (employeeId != null) {
-                        stmt.setInt(2, employeeId);
-                    } else {
-                        stmt.setNull(2, Types.INTEGER);
-                    }
-                    stmt.executeUpdate();
-                }
-            }
-            
-            conn.commit();
             
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("transaction_id", transactionId);
@@ -231,24 +192,32 @@ public class CreateTransactionServlet extends HttpServlet {
             ResponseUtil.sendJSONResponse(response, responseData, 201, "Transaction created successfully");
             
         } catch (SQLException e) {
-            try {
-                if (conn != null && !conn.getAutoCommit()) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-                System.err.println("Error rolling back: " + ex.getMessage());
-            }
             System.err.println("Create transaction error: " + e.getMessage());
             e.printStackTrace();
-            ResponseUtil.sendErrorResponse(response, "An error occurred while creating transaction", 500);
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
+            
+            // Handle stored procedure and trigger violations with better error messages
+            String errorMsg = e.getMessage();
+            if (errorMsg != null) {
+                if (errorMsg.contains("Order does not exist") || errorMsg.contains("Order not found")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Transaction error: " + errorMsg, 404);
+                } else if (errorMsg.contains("branch") || errorMsg.contains("Branch")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Branch validation error: " + errorMsg, 400);
+                } else if (errorMsg.contains("Assign the order to a branch")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Order validation: " + errorMsg, 400);
+                } else if (errorMsg.contains("Transaction branch must match")) {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "Branch mismatch: " + errorMsg, 400);
+                } else {
+                    ResponseUtil.sendErrorResponse(response, 
+                        "An error occurred while creating transaction: " + errorMsg, 500);
                 }
-            } catch (SQLException e) {
-                System.err.println("Error resetting auto-commit: " + e.getMessage());
+            } else {
+                ResponseUtil.sendErrorResponse(response, "An error occurred while creating transaction", 500);
             }
+        } finally {
             DatabaseConfig.closeDBConnection(conn);
         }
     }

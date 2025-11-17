@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    h2 {
+      color: #6d4c41;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .admin-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+    }
+    
+    .admin-section {
+      background: #faf8f3;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
+    }
+    
+    .admin-section h3 {
+      color: #6d4c41;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #8b6f47;
+    }
+    
+    select {
+      transition: border-color 0.3s;
+    }
+    
+    select:hover {
+      border-color: #8b6f47;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: #6d4c41;
+      box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
+    }
+    
+    .branch-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.3s;
+    }
+    
+    .branch-item:hover {
+      transform: translateX(5px);
+    }
+    
+    .branch-item h4 {
+      color: #333;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    
+    .branch-item p {
+      color: #666;
+      margin: 5px 0;
+      font-size: 0.95rem;
+    }
+    
+    .report-card {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .report-card h4 {
+      color: #6d4c41;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    
+    .report-card p {
+      color: #333;
+      margin: 8px 0;
+      font-size: 1rem;
+    }
+    
+    .report-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .report-card li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e0e0e0;
+      color: #333;
+    }
+    
+    .report-card li:last-child {
+      border-bottom: none;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6d4c41;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 4px solid #c33;
+    }
+    
+    .order-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.3s;
+    }
+    
+    .order-item:hover {
+      transform: translateX(5px);
+    }
+    
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .order-header h4 {
+      color: #333;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    
+    .order-status {
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-confirmed {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .order-details {
+      margin-bottom: 15px;
+    }
+    
+    .order-details p {
+      color: #666;
+      margin: 5px 0;
+      font-size: 0.95rem;
+    }
+    
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-confirm, .btn-complete, .btn-cancel, .btn-view {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    
+    .btn-confirm {
+      background: #17a2b8;
+      color: white;
+    }
+    
+    .btn-confirm:hover {
+      background: #138496;
+    }
+    
+    .btn-complete {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-complete:hover {
+      background: #218838;
+    }
+    
+    .btn-cancel {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-cancel:hover {
+      background: #c82333;
+    }
+    
+    .btn-view {
+      background: #6d4c41;
+      color: white;
+    }
+    
+    .btn-view:hover {
+      background: #8b6f47;
+    }
+    
+    .employee-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.3s;
+    }
+    
+    .employee-item:hover {
+      transform: translateX(5px);
+    }
+    
+    .employee-item h4 {
+      color: #333;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    
+    .employee-item p {
+      color: #666;
+      margin: 5px 0;
+      font-size: 0.95rem;
+    }
+    
+    @media (max-width: 768px) {
+      .admin-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <main>
+    <h2 id="pageTitle">⚙️ Admin Panel</h2>
+    <div id="adminContent" class="admin-content">
+      <!-- Admin & Manager Sections -->
+      <div id="adminManagerSections" style="display: none;">
+        <div class="admin-section" id="branchesSection">
+          <h3>📍 Branches</h3>
+          <div id="branchesList" class="loading">Loading branches...</div>
+        </div>
+        
+        <div class="admin-section" id="analyticsSection" style="display: none;">
+          <h3>📈 Analytics</h3>
+          <div style="margin-bottom: 20px;">
+            <label for="analyticsPeriod" style="display: block; margin-bottom: 10px; font-weight: 600; color: #6d4c41;">Period:</label>
+            <select id="analyticsPeriod" style="width: 100%; padding: 10px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+              <option value="">Select Period</option>
+              <option value="weekly">Weekly Sales</option>
+              <option value="monthly">Monthly Sales</option>
+              <option value="annual">Annual Sales</option>
+            </select>
+          </div>
+          <div id="analyticsContent" class="loading">Select a period to view analytics...</div>
+        </div>
+        
+        <div class="admin-section" id="reportsSection">
+          <h3>📊 Reports</h3>
+          <div style="margin-bottom: 20px;">
+            <label for="reportType" style="display: block; margin-bottom: 10px; font-weight: 600; color: #6d4c41;">Report Type:</label>
+            <select id="reportType" style="width: 100%; padding: 10px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+              <option value="items">Top Selling Items</option>
+              <option value="foods">Top Selling Foods</option>
+              <option value="drinks">Top Selling Drinks</option>
+            </select>
+          </div>
+          <div id="reportsContent" class="loading">Loading reports...</div>
+        </div>
+      </div>
+      
+      <!-- Staff Section: Order Management -->
+      <div class="admin-section" id="ordersSection">
+        <h3>📦 Order Management</h3>
+        <div id="ordersList" class="loading">Loading orders...</div>
+      </div>
+      
+      <!-- Admin Only Sections -->
+      <div id="adminOnlySections" style="display: none;">
+        <div class="admin-section" id="employeesSection">
+          <h3>👥 Employee Management</h3>
+          <div id="employeesList" class="loading">Loading employees...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/include.js"></script>
+  <script>
+    // Load header
+    includeHTML('header-container', 'includes/header.html');
+  </script>
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <!-- DOM Utilities -->
+  <script src="js/dom-utils.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
+
