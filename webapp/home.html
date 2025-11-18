@@ -194,6 +194,7 @@
       color: #999;
     }
     
+    .media-embed,
     .media-video,
     .media-image {
       width: 100%;
@@ -204,8 +205,26 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
+    .media-embed.active,
     .media-video.active,
     .media-image.active {
+      display: block;
+    }
+    
+    .media-embed {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 
+        0 8px 25px rgba(109, 76, 65, 0.3),
+        0 0 0 8px rgba(245, 245, 220, 0.8);
+      border: 4px solid #6d4c41;
+      background: #000;
+    }
+    
+    .media-embed iframe {
+      width: 100%;
+      min-height: 420px;
+      border: 0;
       display: block;
     }
     
@@ -260,7 +279,7 @@
     .top-menu-section {
       max-width: 1200px;
       margin: 0 auto 60px;
-      padding: 0 20px;
+      padding: 0 20px 120px;
     }
     
     .section-header {
@@ -543,7 +562,7 @@
 
   <!-- Media Section -->
   <section class="media-section">
-    <div class="media-container">
+    <div class="media-container" data-youtube-url="https://youtu.be/Cr7jymDMRlI?si=MZsuEZmqZf9iPWMD" data-youtube-id="">
       <div class="media-placeholder" id="mediaPlaceholder">
         <div class="media-placeholder-icon">[VIDEO]</div>
         <h3>Promotional Content</h3>
@@ -551,6 +570,14 @@
         <p style="font-size: 0.85rem; margin-top: 10px; color: #999;">
           Place files in: <code>assets/videos/</code> or <code>assets/images/</code>
         </p>
+      </div>
+      <div class="media-embed" id="mediaEmbed">
+        <iframe
+          id="mediaIframe"
+          title="Café promotional video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
       </div>
       <video class="media-video" id="mediaVideo" controls autoplay muted loop>
         Your browser does not support the video tag.
@@ -597,6 +624,21 @@
       const mediaPlaceholder = document.getElementById('mediaPlaceholder');
       const mediaVideo = document.getElementById('mediaVideo');
       const mediaImage = document.getElementById('mediaImage');
+      const mediaEmbed = document.getElementById('mediaEmbed');
+      const mediaIframe = document.getElementById('mediaIframe');
+      const mediaContainer = document.querySelector('.media-container');
+      
+      // Prefer YouTube embed if configured
+      const youtubeEmbedUrl = getConfiguredYouTubeEmbedUrl(mediaContainer?.dataset);
+      if (youtubeEmbedUrl && mediaEmbed && mediaIframe) {
+        mediaIframe.src = youtubeEmbedUrl;
+        mediaPlaceholder.style.display = 'none';
+        mediaEmbed.style.display = 'block';
+        mediaEmbed.classList.add('active');
+        mediaVideo.style.display = 'none';
+        mediaImage.style.display = 'none';
+        return;
+      }
       
       // Load cafe_video.mp4
       const videoPath = 'assets/videos/cafe_video.mp4';
@@ -656,6 +698,57 @@
         return trimmed;
       }
       return `assets/images/${trimmed}`;
+    }
+    
+    function getConfiguredYouTubeEmbedUrl(dataset = {}) {
+      if (!dataset) return null;
+      const potentialSource = (dataset.youtubeUrl || dataset.youtubeId || '').trim();
+      return formatYouTubeEmbedUrl(potentialSource);
+    }
+    
+    function formatYouTubeEmbedUrl(rawInput) {
+      if (!rawInput) return null;
+      const trimmed = rawInput.trim();
+      if (!trimmed) return null;
+      
+      const idPattern = /^[A-Za-z0-9_-]{11}$/;
+      if (idPattern.test(trimmed)) {
+        return appendDefaultYouTubeParams(`https://www.youtube.com/embed/${trimmed}`);
+      }
+      
+      try {
+        const parsed = new URL(trimmed);
+        if (!/youtube\.com|youtu\.be/i.test(parsed.hostname)) {
+          return null;
+        }
+        
+        if (parsed.hostname.includes('youtu.be')) {
+          const shortId = parsed.pathname.replace(/^\/+/, '');
+          if (shortId) {
+            return appendDefaultYouTubeParams(`https://www.youtube.com/embed/${shortId}`);
+          }
+        }
+        
+        if (parsed.pathname.includes('/embed/')) {
+          return appendDefaultYouTubeParams(parsed.href);
+        }
+        
+        const watchId = parsed.searchParams.get('v');
+        if (watchId) {
+          return appendDefaultYouTubeParams(`https://www.youtube.com/embed/${watchId}`);
+        }
+      } catch (error) {
+        console.warn('Unable to parse YouTube link for media section:', rawInput, error);
+        return null;
+      }
+      
+      return null;
+    }
+    
+    function appendDefaultYouTubeParams(url) {
+      if (!url) return null;
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}rel=0&modestbranding=1`;
     }
     
     function escapeHTML(value) {
