@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    .page-header {
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .page-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .page-header p {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+    
+    .admin-section {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
+    }
+    
+    .admin-section h2 {
+      color: #6d4c41;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #d7ccc8;
+    }
+    
+    .admin-section h3 {
+      color: #8b6f47;
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      margin-top: 25px;
+    }
+    
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .branch-item {
+      background: #faf8f3;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .branch-item h4 {
+      color: #6d4c41;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+    
+    .branch-item p {
+      color: #666;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
+    .branch-item strong {
+      color: #8b6f47;
+    }
+    
+    .report-card {
+      background: #faf8f3;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+    }
+    
+    .report-card h4 {
+      color: #6d4c41;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    
+    .report-card p {
+      color: #666;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+    
+    .stat-value {
+      color: #6d4c41;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section-subtitle {
+      color: #8b6f47;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+    }
+
+    .branch-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    .branch-form,
+    .system-settings-form {
+      background: #fff7ee;
+      border: 1px solid #f0d9c2;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #6d4c41;
+      font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px;
+      border: 1px solid #d7ccc8;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 15px;
+    }
+
+    .branch-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .export-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: #6d4c41;
+      color: white;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-available {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-unavailable {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .controls label {
+      color: #6d4c41;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    
+    .controls select {
+      padding: 10px 15px;
+      border: 1px solid #d7ccc8;
+      border-radius: 8px;
+      background: white;
+      color: #3e2723;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+    
+    .controls select:hover {
+      border-color: #8b6f47;
+    }
+    
+    .controls select:focus {
+      outline: none;
+      border-color: #6d4c41;
+      box-shadow: 0 0 0 3px rgba(109, 76, 65, 0.1);
+    }
+    
+    .employee-item {
+      background: #faf8f3;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .employee-info h4 {
+      color: #6d4c41;
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+    
+    .employee-info p {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    
+    .employee-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      width: min(650px, 95%);
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      border: none;
+      background: transparent;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #6d4c41;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .form-grid.two-column {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .form-grid.two-column .form-group {
+      margin-bottom: 0;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: #6d4c41;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #8b6f47;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(109, 76, 65, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #d4a574;
+      color: #3e2723;
+    }
+    
+    .btn-secondary:hover {
+      background: #c9a961;
+    }
+    
+    .btn-danger {
+      background: #d32f2f;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: #b71c1c;
+    }
+    
+    .orders-container {
+      display: grid;
+      gap: 15px;
+    }
+    
+    .order-item {
+      background: #faf8f3;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .order-info h4 {
+      color: #6d4c41;
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+    
+    .order-info p {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    
+    .order-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-confirmed {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #c33;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+    
+    .chart-container {
+      margin-top: 20px;
+      padding: 20px;
+      background: #faf8f3;
+      border-radius: 10px;
+    }
+    
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .bar-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .bar-label {
+      min-width: 150px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .bar {
+      flex: 1;
+      height: 30px;
+      background: linear-gradient(90deg, #6d4c41 0%, #8b6f47 100%);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    
+    @media (max-width: 992px) {
+      .branch-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .employee-item,
+      .order-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .employee-actions {
+        justify-content: flex-start;
+      }
+      
+      .page-header h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <main>
+    <div class="page-header">
+      <h1 id="pageTitle">⚙️ Admin Panel</h1>
+      <p>Manage branches, employees, reports, and orders</p>
+    </div>
+
+    <!-- Admin Only Sections -->
+    <div id="adminOnlySections" style="display: none;">
+      <!-- Executive Dashboard -->
+      <div class="admin-section" id="dashboardSection" style="display: none;">
+        <h2>📊 Executive Overview</h2>
+        <div class="stats-grid">
+          <div class="report-card">
+            <h4>Total Sales</h4>
+            <p class="stat-value" id="summaryTotalSales">₱0.00</p>
+            <small>Total transactions: <span id="summaryTotalTransactions">0</span></small>
+          </div>
+          <div class="report-card">
+            <h4>Active Orders</h4>
+            <p class="stat-value" id="summaryActiveOrders">0</p>
+          </div>
+          <div class="report-card">
+            <h4>Customers</h4>
+            <p class="stat-value" id="summaryCustomers">0</p>
+          </div>
+          <div class="report-card">
+            <h4>Employees</h4>
+            <p class="stat-value" id="summaryEmployees">0</p>
+          </div>
+        </div>
+        <div class="report-card">
+          <h4>🏢 Branch Performance</h4>
+          <div id="branchPerformanceTable" class="table-responsive">
+            <p class="loading">Loading branch performance...</p>
+          </div>
+        </div>
+        <div class="report-card">
+          <h4>🎟️ Loyalty Snapshot</h4>
+          <div id="loyaltyMetrics">
+            <p>Total Cards: <strong id="summaryLoyaltyCards">0</strong></p>
+            <p>Total Points: <strong id="summaryLoyaltyPoints">0</strong></p>
+            <p>Recent Redemptions (30d): <strong id="summaryRecentRedemptions">0</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branches Section -->
+      <div class="admin-section" id="branchesSection" style="display: none;">
+        <h2>🏢 Branches Management</h2>
+        <div class="branch-layout">
+          <div id="branchesList" class="loading">Loading branches...</div>
+          <div class="branch-form">
+            <h3 id="branchFormTitle">Add Branch</h3>
+            <form id="branchForm">
+              <input type="hidden" id="branchIdInput">
+              <div class="form-group">
+                <label for="branchNameInput">Branch Name</label>
+                <input type="text" id="branchNameInput" required>
+              </div>
+              <div class="form-group">
+                <label for="branchAddressInput">Address</label>
+                <textarea id="branchAddressInput" rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="branchContactInput">Contact Number</label>
+                <input type="text" id="branchContactInput">
+              </div>
+              <div class="form-group">
+                <label for="branchManagerSelect">Assign Manager</label>
+                <select id="branchManagerSelect">
+                  <option value="">Unassigned</option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="branchResetBtn">Reset</button>
+                <button type="button" class="btn btn-danger" id="branchDeleteBtn" style="display:none;">Delete</button>
+                <button type="submit" class="btn btn-primary" id="branchSaveBtn">Save Branch</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employees Section -->
+      <div class="admin-section" id="employeesSection" style="display: none;">
+        <h2>👥 Employee Management</h2>
+        <div class="controls">
+          <button class="btn btn-primary" onclick="openEmployeeModal('create')">+ Add New Employee</button>
+        </div>
+        <div id="employeesList" class="loading">Loading employees...</div>
+      </div>
+
+      <div class="modal" id="employeeModal" aria-hidden="true">
+        <div class="modal-content">
+          <button class="modal-close" type="button" id="employeeModalClose">&times;</button>
+          <h3 id="employeeModalTitle">Add Employee</h3>
+          <form id="employeeForm">
+            <input type="hidden" id="employeeIdInput">
+            <div class="form-grid two-column">
+              <div class="form-group">
+                <label for="employeeNameInput">Full Name</label>
+                <input type="text" id="employeeNameInput" placeholder="Juan Dela Cruz" required>
+              </div>
+              <div class="form-group">
+                <label for="employeeUsernameInput">Username</label>
+                <input type="text" id="employeeUsernameInput" placeholder="juan.staff" required>
+              </div>
+              <div class="form-group">
+                <label for="employeePasswordInput">Password <small>(min 6 chars)</small></label>
+                <input type="password" id="employeePasswordInput" placeholder="******">
+              </div>
+              <div class="form-group">
+                <label for="employeeRoleInput">Role</label>
+                <select id="employeeRoleInput" required>
+                  <option value="staff">Staff</option>
+                  <option value="manager">Manager</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="employeeBranchInput">Assign Branch</label>
+                <select id="employeeBranchInput">
+                  <option value="">Unassigned</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="employeeContactInput">Contact Number</label>
+                <input type="tel" id="employeeContactInput" placeholder="+63 900 000 0000">
+              </div>
+            </div>
+            <div id="employeeModalError" class="error-message" style="display:none;"></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" id="employeeModalCancel">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="employeeModalSubmit">Save Employee</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Analytics Section (Admin Only) -->
+      <div class="admin-section" id="analyticsSection" style="display: none;">
+        <h2>📊 Analytics</h2>
+        <div class="controls">
+          <label for="analyticsPeriod">Period:</label>
+          <select id="analyticsPeriod">
+            <option value="weekly">This Week</option>
+            <option value="monthly" selected>This Month</option>
+            <option value="annual">This Year</option>
+          </select>
+        </div>
+        <div id="analyticsContent" class="loading">Loading analytics...</div>
+      </div>
+
+    <!-- Admin & Manager Sections -->
+    <div id="adminManagerSections" style="display: none;">
+      <!-- Reports Section -->
+      <div class="admin-section" id="reportsSection" style="display: none;">
+        <h2>📈 Reports</h2>
+        <div class="controls">
+          <label for="reportType">Report Type:</label>
+          <select id="reportType">
+            <option value="items" selected>All Items</option>
+            <option value="foods">Foods Only</option>
+            <option value="drinks">Drinks Only</option>
+          </select>
+        </div>
+        <div id="reportsContent" class="loading">Loading reports...</div>
+      </div>
+    </div>
+
+    <!-- Report Exports -->
+    <div class="admin-section" id="exportsSection" style="display: none;">
+      <h2>📤 Export Reports</h2>
+      <p class="section-subtitle">Download CSV snapshots for offline analysis.</p>
+      <div class="export-buttons">
+        <button class="btn btn-primary" data-export-report="sales_summary">Sales Summary CSV</button>
+        <button class="btn btn-primary" data-export-report="loyalty_trends">Loyalty Trends CSV</button>
+        <button class="btn btn-primary" data-export-report="orders_by_status">Orders by Status CSV</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/include.js"></script>
+  <script>
+    includeHTML('header-container', 'includes/header.html');
+  </script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    // Initialize admin panel when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if user has admin/manager/staff role
+      const role = localStorage.getItem('role') || 'guest';
+      const userType = localStorage.getItem('user_type') || 'guest';
+      
+      if (role === 'guest' || (role !== 'admin' && role !== 'manager' && role !== 'staff')) {
+        // Redirect to home if not authorized
+        window.location.href = 'home.html';
+        return;
+      }
+      
+      // Initialize admin panel
+      if (typeof initializeAdminPanel === 'function') {
+        initializeAdminPanel();
+      } else {
+        // Wait for admin.js to load
+        setTimeout(() => {
+          if (typeof initializeAdminPanel === 'function') {
+            initializeAdminPanel();
+          }
+        }, 500);
+      }
+    });
+  </script>
+
+</body>
+</html>
+
