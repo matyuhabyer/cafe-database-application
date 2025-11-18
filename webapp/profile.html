@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    .profile-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .profile-header h2 {
+      color: #6d4c41;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .profile-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .profile-card {
+      background: #faf8f3;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
+      margin-bottom: 30px;
+    }
+    
+    .profile-section {
+      margin-bottom: 35px;
+    }
+    
+    .profile-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .profile-section h3 {
+      color: #6d4c41;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #8b6f47;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .info-item label {
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .info-item span {
+      color: #3e2723;
+      font-size: 1.1rem;
+      font-weight: 500;
+      padding: 10px 15px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #d7ccc8;
+    }
+    
+    .loyalty-card-section {
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+    
+    .loyalty-card-section h4 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .loyalty-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .loyalty-stat {
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .loyalty-stat label {
+      display: block;
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    
+    .loyalty-stat .value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .points-display {
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .redeem-info {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+    
+    .branch-info {
+      background: #f5f5dc;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #d7ccc8;
+      margin-top: 15px;
+    }
+    
+    .branch-info h5 {
+      color: #6d4c41;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    
+    .branch-info p {
+      color: #666;
+      margin: 5px 0;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #c33;
+      text-align: center;
+    }
+    
+    .role-badge {
+      display: inline-block;
+      background: #d4a574;
+      color: #3e2723;
+      padding: 6px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 10px;
+    }
+    
+    .logout-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #d7ccc8;
+      text-align: center;
+    }
+    
+    .btn-logout {
+      background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
+    }
+    
+    .btn-logout:hover {
+      background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
+    }
+    
+    .btn-logout:active {
+      transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .loyalty-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .profile-card {
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <main>
+    <div class="profile-header">
+      <h2>My Profile</h2>
+    </div>
+
+    <div id="profileContent" class="loading">Loading profile...</div>
+  </main>
+
+  <script src="js/include.js"></script>
+  <script>
+    // Load header
+    includeHTML('header-container', 'includes/header.html');
+  </script>
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <!-- DOM Utilities -->
+  <script src="js/dom-utils.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    /* Custom Navigation Bar for Menu Page */
+    .home-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: #fff;
+      padding: 15px 40px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .home-nav .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .home-nav .logo img {
+      width: 45px;
+      height: 45px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    
+    .home-nav .logo h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 0;
+      color: #fff;
+    }
+    
+    .home-nav .logo a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .home-nav .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    
+    .home-nav .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 15px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    
+    .home-nav .nav-links a:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .home-nav .btn-signin {
+      background: #d4a574;
+      color: #3e2723;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .home-nav .btn-signin:hover {
+      background: #c9a961;
+    }
+    
+    @media (max-width: 768px) {
+      .home-nav {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+      }
+      
+      .home-nav .nav-links {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .home-nav .logo h1 {
+        font-size: 1.3rem;
+      }
+    }
+    
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    .menu-header {
+      background: #faf8f3;
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      border: 1px solid #d7ccc8;
+    }
+    
+    .menu-header h2 {
+      color: #6d4c41;
+      font-size: 2rem;
+      margin: 0;
+    }
+    
+    .currency {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .currency label {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .currency select {
+      padding: 10px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+    
+    .currency select:focus {
+      outline: none;
+      border-color: #8b6f47;
+    }
+    
+    .product-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+    }
+    
+    .category-section {
+      padding: 40px;
+      background: #faf8f3;
+      border-radius: 15px;
+      border: 1px solid #d7ccc8;
+      margin-bottom: 50px;
+    }
+    
+    .category-title {
+      color: #6d4c41;
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #d7ccc8;
+    }
+    
+    .items-container-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .items-container {
+      display: flex;
+      gap: 25px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-behavior: smooth;
+      padding: 10px 0 20px 0;
+      scrollbar-width: thin;
+      scrollbar-color: #8b6f47 #f5f5dc;
+    }
+    
+    .items-container::-webkit-scrollbar {
+      height: 8px;
+    }
+    
+    .items-container::-webkit-scrollbar-track {
+      background: #f5f5dc;
+      border-radius: 10px;
+    }
+    
+    .items-container::-webkit-scrollbar-thumb {
+      background: #8b6f47;
+      border-radius: 10px;
+    }
+    
+    .items-container::-webkit-scrollbar-thumb:hover {
+      background: #6d4c41;
+    }
+    
+    .items-container {
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+    
+    .product {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      flex: 0 0 280px;
+      min-width: 280px;
+      max-width: 280px;
+    }
+    
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .product-unavailable {
+      opacity: 0.7;
+      background: #f5f5f5;
+      border-color: #bdbdbd;
+    }
+    
+    .unavailable-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #d32f2f;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      z-index: 10;
+    }
+    
+    .product-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .product-placeholder {
+      font-size: 2.4rem;
+      color: #8b6f47;
+      opacity: 0.4;
+    }
+    
+    .image-unavailable {
+      opacity: 0.5;
+      filter: grayscale(70%);
+    }
+    
+    .product-body {
+      padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .product-info {
+      width: 100%;
+      text-align: left;
+    }
+    
+    .product-header {
+      margin-bottom: 8px;
+    }
+    
+    .product-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #6d4c41;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .product-header h4 {
+      color: #6d4c41;
+      font-size: 1.3rem;
+      margin: 0;
+      line-height: 1.3;
+      text-align: left;
+    }
+    
+    .text-strikethrough {
+      text-decoration: line-through;
+      color: #9e9e9e;
+    }
+    
+    .product-description {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      flex-grow: 1;
+      line-height: 1.4;
+      text-align: left;
+    }
+    
+    .text-unavailable {
+      color: #9e9e9e;
+      opacity: 0.8;
+    }
+    
+    .product-price-section {
+      width: 100%;
+      margin-top: auto;
+    }
+    
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6d4c41;
+      margin: 0;
+    }
+    
+    /* Scroll arrows */
+    .scroll-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(109, 76, 65, 0.9);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 10;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .scroll-arrow:hover {
+      background: rgba(109, 76, 65, 1);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    .scroll-arrow:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+    
+    .scroll-arrow-left {
+      left: -20px;
+    }
+    
+    .scroll-arrow-right {
+      right: -20px;
+    }
+    
+    .scroll-arrow.hidden {
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .scroll-arrow {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+      }
+      
+      .scroll-arrow-left {
+        left: -15px;
+      }
+      
+      .scroll-arrow-right {
+        right: -15px;
+      }
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      font-size: 1.2rem;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #c33;
+      text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+      .menu-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .category-section {
+        padding: 25px;
+      }
+      
+      .category-title {
+        font-size: 1.6rem;
+      }
+      
+      .product {
+        flex: 0 0 240px;
+        min-width: 240px;
+        max-width: 240px;
+      }
+      
+      .items-container {
+        gap: 15px;
+      }
+      
+      .product-image {
+        height: 180px;
+      }
+      
+      .product-body {
+        padding: 15px;
+      }
+      
+      .product-header h4 {
+        font-size: 1.1rem;
+      }
+      
+      .product-price {
+        font-size: 1.3rem;
+      }
+      
+      .scroll-arrow-left {
+        left: -10px;
+      }
+      
+      .scroll-arrow-right {
+        right: -10px;
+      }
+    }
+    
+    /* Footer */
+    .site-footer {
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 60px;
+    }
+    
+    .site-footer p {
+      margin: 0;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <main>
+    <div class="menu-header">
+      <h2>Our Menu</h2>
+      <div class="currency">
+        <label for="currency">Currency:</label>
+        <select id="currency">
+          <option value="PHP">PHP</option>
+          <option value="USD">USD</option>
+          <option value="KRW">KRW</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="productList" class="loading">Loading menu...</div>
+  </main>
+
+  <script src="js/include.js"></script>
+  <script>
+    includeHTML('header-container', 'includes/header.html');
+
+    // Get the context path
+    if (typeof window.BASE_URL === 'undefined') {
+      window.BASE_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+      window.API_BASE = window.BASE_URL + '/api';
+    }
+    
+    let menuData = [];
+    let currentCurrency = localStorage.getItem('selectedCurrency') || 'PHP';
+    let currencies = [];
+    const currencySelect = document.getElementById('currency');
+    
+    function resolveImageUrl(imageUrl) {
+      if (!imageUrl) return null;
+      let trimmed = String(imageUrl).trim();
+      if (!trimmed) return null;
+      if (/^(https?:|data:|blob:)/i.test(trimmed)) {
+        return trimmed;
+      }
+      trimmed = trimmed.replace(/^\.\/+/, '');
+      if (trimmed.startsWith('/')) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('assets/')) {
+        return trimmed;
+      }
+      return `assets/images/${trimmed}`;
+    }
+    
+    function escapeAttribute(value) {
+      if (value === undefined || value === null) return '';
+      const strValue = String(value);
+      const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return strValue.replace(/[&<>"']/g, (char) => escapeMap[char] || char);
+    }
+    
+    // Fetch currencies
+    async function fetchCurrencies() {
+      try {
+        const response = await fetch(`${window.API_BASE}/menu/get_currencies`);
+        const result = await response.json();
+        
+        if (result.success) {
+          currencies = result.data;
+          const storedCurrency = localStorage.getItem('selectedCurrency');
+          currentCurrency = storedCurrency || 'PHP';
+          if (currencySelect) {
+            currencySelect.innerHTML = currencies.map(c => 
+              `<option value="${c.code}">${c.code} - ${c.symbol}</option>`
+            ).join('');
+            currencySelect.value = currentCurrency;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching currencies:', error);
+      }
+    }
+    
+    // Currency change handler
+    if (currencySelect) {
+      currencySelect.addEventListener('change', (e) => {
+        currentCurrency = e.target.value;
+        localStorage.setItem('selectedCurrency', currentCurrency);
+        fetchMenu(currentCurrency);
+      });
+    }
+    
+    // Fetch menu from API
+    async function fetchMenu(currency = 'PHP') {
+      try {
+        const list = document.getElementById("productList");
+        if (!list) {
+          console.error('productList element not found');
+          return;
+        }
+        
+        list.innerHTML = '<div class="loading">Loading menu...</div>';
+        
+        const apiUrl = `${window.API_BASE}/menu/get_menu?currency=${currency}`;
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          list.innerHTML = `<div class="error-message">Error loading menu: ${response.status} ${response.statusText}</div>`;
+          return;
+        }
+        
+        const result = await response.json();
+        
+        let dataToUse = null;
+        if (result.success && result.data) {
+          dataToUse = result.data;
+        } else if (result.categories || result.currency) {
+          dataToUse = result;
+        }
+        
+        if (dataToUse) {
+          menuData = dataToUse;
+          currentCurrency = currency;
+          localStorage.setItem('selectedCurrency', currency);
+          renderProducts();
+        } else {
+          list.innerHTML = '<div class="error-message">Error loading menu data</div>';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById("productList").innerHTML = '<div class="error-message">Error loading menu. Please try again later.</div>';
+      }
+    }
+    
+    // Render products
+    function renderProducts() {
+      const list = document.getElementById("productList");
+      if (!list) return;
+      
+      if (!menuData || !menuData.categories || menuData.categories.length === 0) {
+        list.innerHTML = '<div class="error-message">No menu items available</div>';
+        return;
+      }
+      
+      // Get currency info from API response or fallback
+      const currencySymbol = menuData.currency?.symbol || 
+                            currencies.find(c => c.code === currentCurrency)?.symbol ||
+                            currencies.find(c => c.code === 'PHP')?.symbol ||
+                            '₱';
+      
+      list.innerHTML = '';
+      
+      // Define category-specific limits
+      const categoryLimits = {
+        'Coffee-Based': 6,
+        'Non-Coffee': 6,
+        'Tea-Based': 6
+        // All other categories: no limit (show all)
+      };
+      
+      menuData.categories.forEach((category, index) => {
+        if (!category.items || category.items.length === 0) {
+          return;
+        }
+        
+        const categorySection = document.createElement('div');
+        categorySection.className = 'category-section';
+        categorySection.innerHTML = `<h3 class="category-title">${category.name}</h3>`;
+        
+        // Create wrapper for scrollable container
+        const itemsWrapper = document.createElement('div');
+        itemsWrapper.className = 'items-container-wrapper';
+        
+        // Create scroll arrows
+        const arrowLeft = document.createElement('button');
+        arrowLeft.className = 'scroll-arrow scroll-arrow-left hidden';
+        arrowLeft.innerHTML = '‹';
+        arrowLeft.setAttribute('aria-label', 'Scroll left');
+        arrowLeft.type = 'button';
+        
+        const arrowRight = document.createElement('button');
+        arrowRight.className = 'scroll-arrow scroll-arrow-right';
+        arrowRight.innerHTML = '›';
+        arrowRight.setAttribute('aria-label', 'Scroll right');
+        arrowRight.type = 'button';
+        
+        const itemsContainer = document.createElement('div');
+        itemsContainer.className = 'items-container';
+        
+        // Apply category-specific limit
+        const limit = categoryLimits[category.name] || category.items.length;
+        const itemsToShow = category.items.slice(0, limit);
+        
+        itemsToShow.forEach(item => {
+          const isAvailable = item.is_available !== false && 
+                            item.is_available !== 0 && 
+                            item.is_available !== '0';
+          
+          // API already returns price_amount in the selected currency, so use it directly
+          const price = parseFloat(item.price_amount || 0);
+          const formattedPrice = price.toFixed(2);
+          const imageSrc = resolveImageUrl(item.image_url);
+          const imageAlt = escapeAttribute(item.name || category.name || 'Menu item');
+          const imageMarkup = imageSrc 
+            ? `<img src="${imageSrc}" alt="${imageAlt}" loading="lazy" decoding="async">`
+            : `<span class="product-placeholder">${getCategoryEmoji(category.name || '', item.is_drink)}</span>`;
+          
+          const productCard = document.createElement('div');
+          productCard.className = 'product' + (isAvailable ? '' : ' product-unavailable');
+          productCard.innerHTML = `
+            ${!isAvailable ? '<div class="unavailable-badge">Not Available</div>' : ''}
+            <div class="product-image ${!isAvailable ? 'image-unavailable' : ''}">
+              ${imageMarkup}
+            </div>
+            <div class="product-body">
+              <div class="product-info">
+                <span class="product-badge">${category.name || 'Menu Item'}</span>
+                <div class="product-header">
+                  <h4 class="${!isAvailable ? 'text-strikethrough' : ''}">${item.name || 'Unnamed Item'}</h4>
+                </div>
+                <p class="product-description ${!isAvailable ? 'text-unavailable' : ''}">${item.description || 'Delicious item from our menu'}</p>
+              </div>
+              <div class="product-price-section">
+                <span class="product-price ${!isAvailable ? 'text-unavailable' : ''}">${currencySymbol}${formattedPrice}</span>
+              </div>
+            </div>
+          `;
+          itemsContainer.appendChild(productCard);
+        });
+        
+        // Add scroll functionality
+        const updateArrows = () => {
+          const scrollLeft = itemsContainer.scrollLeft;
+          const scrollWidth = itemsContainer.scrollWidth;
+          const clientWidth = itemsContainer.clientWidth;
+          
+          arrowLeft.classList.toggle('hidden', scrollLeft === 0);
+          arrowRight.classList.toggle('hidden', scrollLeft + clientWidth >= scrollWidth - 10);
+        };
+        
+        arrowLeft.addEventListener('click', () => {
+          itemsContainer.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+        
+        arrowRight.addEventListener('click', () => {
+          itemsContainer.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+        
+        itemsContainer.addEventListener('scroll', updateArrows);
+        
+        // Check initial state
+        setTimeout(updateArrows, 100);
+        
+        // Recheck on resize
+        const resizeHandler = () => updateArrows();
+        window.addEventListener('resize', resizeHandler);
+        
+        // Assemble the wrapper
+        itemsWrapper.appendChild(arrowLeft);
+        itemsWrapper.appendChild(itemsContainer);
+        itemsWrapper.appendChild(arrowRight);
+        
+        categorySection.appendChild(itemsWrapper);
+        list.appendChild(categorySection);
+      });
+    }
+    
+    // Get emoji based on category
+    function getCategoryEmoji(categoryName, isDrink) {
+      if (isDrink) {
+        return '☕';
+      }
+      const categoryLower = categoryName.toLowerCase();
+      if (categoryLower.includes('breakfast') || categoryLower.includes('rice')) {
+        return '🍳';
+      } else if (categoryLower.includes('pasta')) {
+        return '🍝';
+      } else if (categoryLower.includes('sandwich')) {
+        return '🥪';
+      } else if (categoryLower.includes('salad')) {
+        return '🥗';
+      } else if (categoryLower.includes('coffee')) {
+        return '☕';
+      } else if (categoryLower.includes('tea')) {
+        return '🍵';
+      } else if (categoryLower.includes('fizzy') || categoryLower.includes('drink')) {
+        return '🥤';
+      } else {
+        return '🍽️';
+      }
+    }
+    
+    
+    // Initialize
+    fetchCurrencies().then(() => {
+      fetchMenu(currentCurrency);
+    });
+  </script>
+  
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: allow all users including guests
+    document.addEventListener('DOMContentLoaded', function() {
+      // Menu page is accessible to everyone
+    });
+  </script>
+
+</body>
+</html>
+

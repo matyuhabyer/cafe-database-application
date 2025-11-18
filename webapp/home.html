@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      width: 100%;
+      min-height: 700px;
+      display: flex;
+      align-items: center;
+      padding: 100px 20px;
+      margin-bottom: 60px;
+      background: transparent;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 3;
+    }
+    
+    .hero-content h1 {
+      font-size: 5rem;
+      margin-bottom: 30px;
+      color: #6d4c41;
+      font-weight: 700;
+      line-height: 1.2;
+      text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2),
+                   0 0 20px rgba(109, 76, 65, 0.15);
+      animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .hero-content .slogan {
+      font-size: 2rem;
+      margin-bottom: 40px;
+      color: #8b6f47;
+      font-weight: 400;
+      line-height: 1.4;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15),
+                   0 0 15px rgba(139, 111, 71, 0.1);
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    .hero-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeInUp 0.8s ease-out 0.3s both;
+      position: relative;
+      z-index: 3;
+    }
+    
+    .hero-image img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 20px;
+      transition: transform 0.3s ease;
+    }
+    
+    .hero-image img:hover {
+      transform: translateY(-5px);
+    }
+    
+    .btn-hero {
+      padding: 18px 40px;
+      border: 2px solid #6d4c41;
+      border-radius: 30px;
+      background: #6d4c41;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(109, 76, 65, 0.3);
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-hero:hover {
+      background: #8b6f47;
+      border-color: #8b6f47;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(109, 76, 65, 0.3);
+    }
+    
+    .btn-hero.primary {
+      background: #6d4c41;
+      color: white;
+    }
+    
+    .btn-hero.primary:hover {
+      background: #8b6f47;
+      transform: translateY(-2px);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Media Section */
+    .media-section {
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+    
+    .media-container {
+      background: #faf8f3;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border: 1px solid #d7ccc8;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .media-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #666;
+      text-align: center;
+    }
+    
+    .media-placeholder-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+      color: #999;
+    }
+    
+    .media-placeholder h3 {
+      font-size: 1.5rem;
+      color: #6d4c41;
+      margin-bottom: 10px;
+    }
+    
+    .media-placeholder p {
+      font-size: 1rem;
+      color: #999;
+    }
+    
+    .media-video,
+    .media-image {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      display: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .media-video.active,
+    .media-image.active {
+      display: block;
+    }
+    
+    .media-video {
+      background: #000;
+      border: 4px solid #6d4c41;
+      border-radius: 15px;
+      box-shadow: 
+        0 8px 25px rgba(109, 76, 65, 0.3),
+        0 0 0 8px rgba(245, 245, 220, 0.8),
+        inset 0 0 20px rgba(0, 0, 0, 0.2);
+      padding: 8px;
+      background: linear-gradient(135deg, #8b6f47 0%, #6d4c41 100%);
+      position: relative;
+    }
+    
+    .media-video video {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      display: block;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    
+    .media-video::before {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      right: -12px;
+      bottom: -12px;
+      background: linear-gradient(135deg, #d4a574 0%, #c9a961 50%, #8b6f47 100%);
+      border-radius: 20px;
+      z-index: -1;
+      box-shadow: 0 10px 30px rgba(109, 76, 65, 0.2);
+    }
+    
+    .media-video::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      right: 4px;
+      bottom: 4px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    /* Top Menu Items Section */
+    .top-menu-section {
+      max-width: 1200px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .section-header h2 {
+      color: #6d4c41;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .section-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    
+    .featured-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 35px;
+      align-items: stretch;
+      width: 100%;
+    }
+    
+    .featured-group {
+      background: #faf8f3;
+      border: 1px solid #d7ccc8;
+      border-radius: 18px;
+      padding: 30px 25px 35px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+      width: 100%;
+    }
+    
+    .featured-group h3 {
+      margin: 0 0 20px 0;
+      color: #6d4c41;
+      font-size: 1.75rem;
+      text-align: center;
+    }
+    
+    .menu-grid.compact {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: #8b6f47 #f5f5dc;
+      flex-grow: 1;
+      min-height: 360px;
+    }
+    
+    .menu-grid.compact::-webkit-scrollbar {
+      height: 8px;
+    }
+    
+    .menu-grid.compact::-webkit-scrollbar-track {
+      background: #f5f5dc;
+      border-radius: 10px;
+    }
+    
+    .menu-grid.compact::-webkit-scrollbar-thumb {
+      background: #8b6f47;
+      border-radius: 10px;
+    }
+    
+    .menu-grid.compact::-webkit-scrollbar-thumb:hover {
+      background: #6d4c41;
+    }
+    
+    .menu-item-card {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      min-width: 260px;
+      flex: 0 0 260px;
+    }
+    
+    .menu-item-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .menu-item-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .menu-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .menu-item-image.placeholder {
+      color: rgba(109, 76, 65, 0.35);
+      font-size: 2.5rem;
+    }
+    
+    .menu-item-content {
+      padding: 20px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .menu-item-content h3 {
+      color: #6d4c41;
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+    }
+    
+    .menu-item-content p {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      flex-grow: 1;
+    }
+    
+    .menu-item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+    
+    .menu-item-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6d4c41;
+    }
+    
+    .menu-item-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #6d4c41;
+      color: white;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    /* Footer */
+    .site-footer {
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 60px;
+    }
+    
+    .site-footer p {
+      margin: 0;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      font-size: 1.2rem;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    
+    .mini-empty-state {
+      text-align: center;
+      padding: 25px 15px;
+      background: white;
+      border-radius: 12px;
+      border: 1px dashed #d7ccc8;
+      color: #777;
+      font-size: 0.95rem;
+    }
+    
+    @media (max-width: 768px) {
+      .hero-container {
+        grid-template-columns: 1fr;
+        gap: 50px;
+      }
+      
+      .hero-content {
+        text-align: center;
+      }
+      
+      .hero-content h1 {
+        font-size: 3.5rem;
+        text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2),
+                     0 0 15px rgba(109, 76, 65, 0.15);
+      }
+      
+      .hero-content .slogan {
+        font-size: 1.5rem;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.15),
+                     0 0 12px rgba(139, 111, 71, 0.1);
+      }
+      
+      .hero-buttons {
+        justify-content: center;
+      }
+      
+      .hero-section {
+        min-height: 600px;
+        padding: 60px 20px;
+      }
+      
+      .hero-image img {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+                    0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+      
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .featured-groups {
+        grid-template-columns: 1fr;
+      }
+      
+      .menu-grid.compact {
+        flex-direction: column;
+        overflow-x: visible;
+      }
+      
+      .section-header h2 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1>The Waiting Room Café</h1>
+        <p class="slogan">Experience the perfect blend of comfort, quality, and community</p>
+        <div class="hero-buttons">
+          <a href="menu.html" class="btn-hero primary">Browse Menu</a>
+          <a href="#top-menu" class="btn-hero">Featured Items</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="assets/images/cafe_hero.png" alt="The Waiting Room Café" onerror="this.src='assets/images/coffee_hero.png'; this.onerror=null;">
+      </div>
+    </div>
+  </section>
+
+  <!-- Media Section -->
+  <section class="media-section">
+    <div class="media-container">
+      <div class="media-placeholder" id="mediaPlaceholder">
+        <div class="media-placeholder-icon">[VIDEO]</div>
+        <h3>Promotional Content</h3>
+        <p>Add your promotional videos or images here</p>
+        <p style="font-size: 0.85rem; margin-top: 10px; color: #999;">
+          Place files in: <code>assets/videos/</code> or <code>assets/images/</code>
+        </p>
+      </div>
+      <video class="media-video" id="mediaVideo" controls autoplay muted loop>
+        Your browser does not support the video tag.
+      </video>
+      <img class="media-image" id="mediaImage" alt="Promotional content" style="display: none;">
+    </div>
+  </section>
+
+  <!-- Top Menu Items Section -->
+  <section class="top-menu-section" id="top-menu">
+    <div class="section-header">
+      <h2>Featured Menu Items</h2>
+      <p>Discover our most popular selections</p>
+    </div>
+    
+    <div class="featured-groups">
+      <div class="featured-group">
+        <h3>Chef's Food Picks</h3>
+        <div id="featuredFoods" class="menu-grid compact loading">
+          Loading featured foods...
+        </div>
+      </div>
+      <div class="featured-group">
+        <h3>Signature Drinks</h3>
+        <div id="featuredDrinks" class="menu-grid compact loading">
+          Loading featured drinks...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/include.js"></script>
+  <script>
+    includeHTML('header-container', 'includes/header.html');
+
+    // Get the context path
+    if (typeof window.BASE_URL === 'undefined') {
+      window.BASE_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+      window.API_BASE = window.BASE_URL + '/api';
+    }
+    
+    // Check for media files
+    async function loadMedia() {
+      const mediaPlaceholder = document.getElementById('mediaPlaceholder');
+      const mediaVideo = document.getElementById('mediaVideo');
+      const mediaImage = document.getElementById('mediaImage');
+      
+      // Load cafe_video.mp4
+      const videoPath = 'assets/videos/cafe_video.mp4';
+      
+      // Set video source and handle loading
+      mediaVideo.src = videoPath;
+      
+      // Handle successful video load
+      mediaVideo.addEventListener('loadeddata', () => {
+        mediaPlaceholder.style.display = 'none';
+        mediaVideo.style.display = 'block';
+        mediaVideo.classList.add('active');
+      });
+      
+      // Handle video load error
+      mediaVideo.addEventListener('error', (e) => {
+        console.warn('Video failed to load:', videoPath);
+        // Try to load image as fallback
+        const imagePath = 'assets/images/promo.jpg';
+        mediaImage.src = imagePath;
+        mediaImage.addEventListener('load', () => {
+          mediaPlaceholder.style.display = 'none';
+          mediaImage.style.display = 'block';
+          mediaImage.classList.add('active');
+        });
+        mediaImage.addEventListener('error', () => {
+          // If no media found, show placeholder
+          mediaPlaceholder.style.display = 'flex';
+        });
+      });
+      
+      // Try to load the video
+      mediaVideo.load();
+    }
+    
+    async function checkFileExists(url) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    }
+    
+    function resolveImageUrl(imageUrl) {
+      if (!imageUrl) return null;
+      let trimmed = String(imageUrl).trim();
+      if (!trimmed) return null;
+      if (/^(https?:|data:|blob:)/i.test(trimmed)) {
+        return trimmed;
+      }
+      trimmed = trimmed.replace(/^\.\/+/, '');
+      if (trimmed.startsWith('/')) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('assets/')) {
+        return trimmed;
+      }
+      return `assets/images/${trimmed}`;
+    }
+    
+    function escapeHTML(value) {
+      if (value === undefined || value === null) return '';
+      const str = String(value);
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return str.replace(/[&<>"']/g, (char) => map[char] || char);
+    }
+    
+    function getMenuCardMarkup(item, currencySymbol) {
+      const imageSrc = resolveImageUrl(item.image_url);
+      const imageMarkup = imageSrc
+        ? `<div class="menu-item-image">
+              <img src="${imageSrc}" alt="${escapeHTML(item.name || 'Menu Item')}" loading="lazy" decoding="async">
+           </div>`
+        : `<div class="menu-item-image placeholder">
+              <span>${item.is_drink ? '☕' : '🍽️'}</span>
+           </div>`;
+      const price = parseFloat(item.price_amount || item.price || 0) || 0;
+      const formattedPrice = price.toFixed(2);
+      return `
+        <div class="menu-item-card">
+          ${imageMarkup}
+          <div class="menu-item-content">
+            <span class="menu-item-badge">${escapeHTML(item.category_name || (item.is_drink ? 'Drink' : 'Food'))}</span>
+            <h3>${escapeHTML(item.name || 'Menu Item')}</h3>
+            <p>${escapeHTML(item.description || 'Delicious item from our menu')}</p>
+            <div class="menu-item-footer">
+              <span class="menu-item-price">${currencySymbol}${formattedPrice}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderFeaturedList(container, items, currencySymbol, emptyMessage) {
+      if (!container) return;
+      if (!items || items.length === 0) {
+        container.innerHTML = `<div class="mini-empty-state">${emptyMessage}</div>`;
+      } else {
+        container.innerHTML = items.map(item => getMenuCardMarkup(item, currencySymbol)).join('');
+      }
+      container.classList.remove('loading');
+    }
+    
+    function isDrinkItem(item, categoryName) {
+      const value = item?.is_drink;
+      if (value === true || value === 1 || value === '1' || value === 'true') {
+        return true;
+      }
+      const category = (categoryName || '').toLowerCase();
+      const name = (item?.name || '').toLowerCase();
+      const drinkKeywords = ['coffee', 'tea', 'drink', 'latte', 'juice', 'matcha', 'beverage', 'brew', 'ade', 'mocha', 'espresso'];
+      const nameKeywords = ['latte', 'tea', 'coffee', 'matcha', 'espresso', 'brew', 'mocha', 'chocolate', 'shake', 'juice', 'fizz'];
+      return drinkKeywords.some(keyword => category.includes(keyword)) ||
+             nameKeywords.some(keyword => name.includes(keyword));
+    }
+    
+    const fallbackFoods = [
+      {
+        name: 'Truffle Pasta',
+        description: 'Handmade pasta with creamy truffle sauce',
+        price: 320,
+        image_url: 'assets/images/trufflepasta.jpg',
+        category_name: 'Chef\'s Picks',
+        is_drink: false
+      },
+      {
+        name: 'Burger Bowl',
+        description: 'Grass-fed beef patties, fresh greens, house dressing',
+        price: 295,
+        image_url: 'assets/images/burgerbowl.jpg',
+        category_name: 'Gourmet Bowls',
+        is_drink: false
+      },
+      {
+        name: 'Clubhouse Stack',
+        description: 'Triple-layer club sandwich with fries',
+        price: 260,
+        image_url: 'assets/images/theclubhouse.jpg',
+        category_name: 'Sandwiches',
+        is_drink: false
+      }
+    ];
+    
+    const fallbackDrinks = [
+      {
+        name: 'Spanish Latte',
+        description: 'Sweet, velvety latte with condensed milk',
+        price: 185,
+        image_url: 'assets/images/spanishlatte.jpg',
+        category_name: 'Coffee-Based',
+        is_drink: true
+      },
+      {
+        name: 'Matcha Latte',
+        description: 'Ceremonial-grade matcha with steamed milk',
+        price: 195,
+        image_url: 'assets/images/matchalatte.jpg',
+        category_name: 'Tea-Based',
+        is_drink: true
+      },
+      {
+        name: 'Strawberry Matcha',
+        description: 'Layered strawberry purée and matcha',
+        price: 205,
+        image_url: 'assets/images/strawberrymatcha.jpg',
+        category_name: 'Specialty Drinks',
+        is_drink: true
+      }
+    ];
+    
+    function ensureFeaturedCount(currentList, fallbackList, desiredCount) {
+      const seenNames = new Set(currentList.map(item => item.name));
+      const padded = [...currentList];
+      
+      for (const fallback of fallbackList) {
+        if (padded.length >= desiredCount) break;
+        if (!seenNames.has(fallback.name)) {
+          padded.push({ ...fallback });
+        }
+      }
+      
+      return padded.slice(0, desiredCount);
+    }
+    
+    // Load top menu items (3 foods + 3 drinks)
+    async function loadTopMenuItems() {
+      const foodContainer = document.getElementById('featuredFoods');
+      const drinkContainer = document.getElementById('featuredDrinks');
+      
+      if (!foodContainer || !drinkContainer) return;
+      
+      try {
+        const response = await fetch(`${window.API_BASE}/menu/get_menu?currency=PHP`);
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.categories) {
+          const currencySymbol = result.data.currency?.symbol || '₱';
+          const foods = [];
+          const drinks = [];
+          
+          result.data.categories.forEach(category => {
+            if (!category.items) return;
+            category.items.forEach(item => {
+              if (!item.is_available) return;
+              const drinkFlag = isDrinkItem(item, category.name);
+              const enrichedItem = {
+                ...item,
+                category_name: category.name,
+                is_drink: drinkFlag
+              };
+              if (drinkFlag) {
+                drinks.push(enrichedItem);
+              } else {
+                foods.push(enrichedItem);
+              }
+            });
+          });
+          
+          let selectedFoods = ensureFeaturedCount(foods.slice(0, 3), fallbackFoods, 3);
+          let selectedDrinks = ensureFeaturedCount(drinks.slice(0, 3), fallbackDrinks, 3);
+          
+          renderFeaturedList(foodContainer, selectedFoods, currencySymbol, 'Food selections coming soon.');
+          renderFeaturedList(drinkContainer, selectedDrinks, currencySymbol, 'Drink selections coming soon.');
+        } else {
+          const message = 'Unable to load menu items. Please try again later.';
+          renderFeaturedList(foodContainer, fallbackFoods, '₱', message);
+          renderFeaturedList(drinkContainer, fallbackDrinks, '₱', message);
+        }
+      } catch (error) {
+        console.error('Error loading top menu items:', error);
+        const message = 'Error loading menu items. Please check your connection.';
+        renderFeaturedList(foodContainer, fallbackFoods, '₱', message);
+        renderFeaturedList(drinkContainer, fallbackDrinks, '₱', message);
+      }
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadMedia();
+      loadTopMenuItems();
+    });
+  </script>
+  
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: allow all users including guests
+    document.addEventListener('DOMContentLoaded', function() {
+      // Home page is accessible to everyone, no restrictions needed
+    });
+  </script>
+
+</body>
+</html>
+

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .page-header h2 {
+      color: #6d4c41;
+      font-size: 2rem;
+      margin: 0;
+    }
+    
+    .back-button {
+      background: #8b6f47;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s;
+    }
+    
+    .back-button:hover {
+      background: #6d4c41;
+    }
+    
+    .order-details-card {
+      background: #faf8f3;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
+      margin-bottom: 20px;
+    }
+    
+    .order-details-card h3 {
+      color: #6d4c41;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #8b6f47;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .info-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #8b6f47;
+    }
+    
+    .info-item label {
+      display: block;
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .info-item span {
+      display: block;
+      color: #333;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 6px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-confirmed {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .items-section {
+      margin-top: 30px;
+    }
+    
+    .order-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-left: 4px solid #8b6f47;
+      display: flex;
+      gap: 20px;
+      align-items: stretch;
+    }
+    
+    .order-item-image {
+      width: 120px;
+      min-width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e0d2c3;
+    }
+    
+    .order-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .order-item-placeholder {
+      font-size: 2.2rem;
+      color: rgba(109, 76, 65, 0.35);
+    }
+    
+    .image-unavailable {
+      opacity: 0.5;
+      filter: grayscale(70%);
+    }
+    
+    .order-item-content {
+      flex: 1;
+    }
+    
+    .order-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 10px;
+    }
+    
+    .order-item-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .order-item-price {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #6d4c41;
+    }
+    
+    .order-item-details {
+      color: #666;
+      font-size: 0.95rem;
+      margin: 10px 0;
+    }
+    
+    .order-item-extras {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+    }
+    
+    .order-item-extras ul {
+      list-style: none;
+      margin: 5px 0;
+    }
+    
+    .order-item-extras li {
+      color: #666;
+      font-size: 0.9rem;
+      padding: 3px 0;
+    }
+    
+    .order-item-extras li:before {
+      content: "➕ ";
+      color: #8b6f47;
+    }
+    
+    .history-section {
+      margin-top: 30px;
+    }
+    
+    @media (max-width: 600px) {
+      .order-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .order-item-image {
+        width: 100%;
+        height: 200px;
+      }
+    }
+    
+    .history-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #8b6f47;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    
+    .history-item-info {
+      flex: 1;
+    }
+    
+    .history-item-status {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .history-item-details {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 5px 0;
+    }
+    
+    .history-item-time {
+      color: #999;
+      font-size: 0.85rem;
+    }
+    
+    .transaction-section {
+      margin-top: 30px;
+    }
+    
+    .transaction-card {
+      background: #e8f5e9;
+      border-radius: 10px;
+      padding: 20px;
+      border-left: 4px solid #4caf50;
+    }
+    
+    .transaction-card h4 {
+      color: #2e7d32;
+      margin-bottom: 15px;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .btn-action {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .btn-confirm {
+      background: #2196F3;
+      color: white;
+    }
+    
+    .btn-confirm:hover {
+      background: #1976D2;
+    }
+    
+    .btn-complete {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .btn-complete:hover {
+      background: #388E3C;
+    }
+    
+    .btn-cancel {
+      background: #f44336;
+      color: white;
+    }
+    
+    .btn-cancel:hover {
+      background: #d32f2f;
+    }
+    
+    .btn-print-receipt {
+      background: #6d4c41;
+      color: white;
+    }
+    
+    .btn-print-receipt:hover {
+      background: #8b6f47;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 4px solid #c33;
+      text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .order-item-header {
+        flex-direction: column;
+      }
+      
+      .history-item {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <main>
+    <div class="page-header">
+      <h2>Order Details</h2>
+      <a href="javascript:history.back()" class="back-button">← Back</a>
+    </div>
+
+    <div id="orderDetailsContent" class="loading">Loading order details...</div>
+  </main>
+
+  <script src="js/include.js"></script>
+  <script>
+    // Load header
+    includeHTML('header-container', 'includes/header.html');
+  </script>
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <!-- DOM Utilities -->
+  <script src="js/dom-utils.js"></script>
+  <script src="js/order_details.js"></script>
+</body>
+</html>
+

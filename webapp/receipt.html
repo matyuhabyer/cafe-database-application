@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receipt - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .back-button-container {
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+      padding: 0 20px;
+    }
+    
+    .back-button {
+      background: #8b6f47;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s;
+    }
+    
+    .back-button:hover {
+      background: #6d4c41;
+    }
+    
+    .receipt-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border: 1px solid #d7ccc8;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Watermark */
+    .receipt-container::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      width: 400px;
+      height: 400px;
+      background-image: url('assets/images/cafe_logo.jpg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.05;
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .receipt-container > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .receipt-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #6d4c41;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .receipt-logo {
+      max-width: 120px;
+      max-height: 120px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 15px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .receipt-header h1 {
+      color: #6d4c41;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .receipt-header p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .receipt-section {
+      margin-bottom: 25px;
+    }
+    
+    .receipt-section h3 {
+      color: #6d4c41;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 8px;
+    }
+    
+    .receipt-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .receipt-info-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .receipt-info-item label {
+      font-weight: 600;
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+    
+    .receipt-info-item span {
+      color: #333;
+      font-size: 1rem;
+    }
+    
+    .receipt-items {
+      margin-top: 20px;
+    }
+    
+    .receipt-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .receipt-item:last-child {
+      border-bottom: none;
+    }
+    
+    .receipt-item-info {
+      flex: 1;
+    }
+    
+    .receipt-item-info h4 {
+      color: #333;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+    
+    .receipt-item-info p {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 2px 0;
+    }
+    
+    .receipt-item-price {
+      text-align: right;
+      font-weight: 600;
+      color: #6d4c41;
+      font-size: 1.1rem;
+    }
+    
+    .receipt-total {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 2px solid #6d4c41;
+      text-align: right;
+    }
+    
+    .receipt-total-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    
+    .receipt-total-row.grand-total {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6d4c41;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 2px solid #6d4c41;
+    }
+    
+    .receipt-footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+      text-align: center;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .receipt-actions {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-print {
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+    }
+    
+    .btn-print:hover {
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(109, 76, 65, 0.3);
+    }
+    
+    .btn-back {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    .btn-back:hover {
+      background: #e0e0e0;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      font-size: 1.2rem;
+    }
+    
+    .error {
+      text-align: center;
+      padding: 60px 20px;
+      color: #dc3545;
+      font-size: 1.2rem;
+    }
+    
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+      
+      .back-button-container {
+        display: none !important;
+      }
+      
+      .receipt-container {
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px 15px !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      .receipt-actions {
+        display: none !important;
+      }
+      
+      /* Compact header */
+      .receipt-header {
+        margin-bottom: 10px !important;
+        padding-bottom: 8px !important;
+      }
+      
+      .receipt-logo {
+        max-width: 60px !important;
+        max-height: 60px !important;
+        margin-bottom: 5px !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      .receipt-header h1 {
+        font-size: 1.2rem !important;
+        margin-bottom: 3px !important;
+      }
+      
+      .receipt-header p {
+        font-size: 0.7rem !important;
+        margin: 2px 0 !important;
+      }
+      
+      /* Compact sections */
+      .receipt-section {
+        margin-bottom: 10px !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      .receipt-section h3 {
+        font-size: 0.9rem !important;
+        margin-bottom: 6px !important;
+        padding-bottom: 4px !important;
+      }
+      
+      .receipt-info {
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+      }
+      
+      .receipt-info-item label {
+        font-size: 0.65rem !important;
+        margin-bottom: 2px !important;
+      }
+      
+      .receipt-info-item span {
+        font-size: 0.75rem !important;
+      }
+      
+      /* Compact items */
+      .receipt-items {
+        margin-top: 8px !important;
+      }
+      
+      .receipt-item {
+        padding: 6px 0 !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      .receipt-item-info h4 {
+        font-size: 0.85rem !important;
+        margin-bottom: 2px !important;
+      }
+      
+      .receipt-item-info p {
+        font-size: 0.7rem !important;
+        margin: 1px 0 !important;
+      }
+      
+      .receipt-item-price {
+        font-size: 0.85rem !important;
+      }
+      
+      /* Compact totals */
+      .receipt-total {
+        margin-top: 10px !important;
+        padding-top: 8px !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      .receipt-total-row {
+        margin-bottom: 4px !important;
+        font-size: 0.8rem !important;
+      }
+      
+      .receipt-total-row.grand-total {
+        font-size: 1rem !important;
+        margin-top: 6px !important;
+        padding-top: 6px !important;
+      }
+      
+      /* Compact footer */
+      .receipt-footer {
+        margin-top: 10px !important;
+        padding-top: 8px !important;
+        font-size: 0.7rem !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      
+      /* Ensure watermark is visible in print */
+      .receipt-container::before {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 0.03 !important;
+        width: 250px !important;
+        height: 250px !important;
+      }
+      
+      /* Prevent page breaks */
+      @page {
+        margin: 0.3cm;
+        size: letter;
+      }
+      
+      /* Ensure no page breaks within receipt */
+      .receipt-container,
+      .receipt-header,
+      .receipt-section,
+      .receipt-items,
+      .receipt-total,
+      .receipt-footer {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="back-button-container">
+    <a href="javascript:history.back()" class="back-button">← Back</a>
+  </div>
+  
+  <div class="receipt-container">
+    <div id="receiptContent" class="loading">Loading receipt...</div>
+  </div>
+
+  <script src="js/receipt.js"></script>
+</body>
+</html>
+

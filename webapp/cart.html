@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart - The Waiting Room Café</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5dc;
+      min-height: 100vh;
+    }
+    
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    h2 {
+      color: #6d4c41;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .cart-items {
+      background: #faf8f3;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
+    }
+    
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      transition: background 0.3s;
+    }
+    
+    .cart-item-image {
+      width: 110px;
+      min-width: 110px;
+      height: 110px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f5f5dc 0%, #e8dcc6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e0d2c3;
+    }
+    
+    .cart-item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .cart-item-placeholder {
+      font-size: 2rem;
+      color: rgba(109, 76, 65, 0.4);
+    }
+    
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    
+    .cart-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .cart-item-info {
+      flex: 1;
+    }
+    
+    .cart-item-info h4 {
+      color: #333;
+      font-size: 1.3rem;
+      margin-bottom: 8px;
+    }
+    
+    .cart-item-info p {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 4px 0;
+    }
+    
+    .cart-item-price {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      min-width: 140px;
+    }
+    
+    .cart-item-price p {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #6d4c41;
+      margin: 0;
+    }
+    
+    .image-unavailable {
+      opacity: 0.6;
+      filter: grayscale(70%);
+    }
+    
+    @media (max-width: 600px) {
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .cart-item-price {
+        width: 100%;
+        align-items: flex-start;
+      }
+      
+      .cart-item-image {
+        width: 100%;
+        height: 200px;
+      }
+    }
+    
+    .btn-remove {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    
+    .btn-remove:hover {
+      background: #c82333;
+    }
+    
+    .cart-summary {
+      background: #faf8f3;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      text-align: center;
+      border: 1px solid #d7ccc8;
+    }
+    
+    .cart-summary h3 {
+      color: #6d4c41;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+    
+    .btn-place-order {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 4px 15px rgba(109, 76, 65, 0.3);
+    }
+    
+    .btn-place-order:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(109, 76, 65, 0.4);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
+    }
+    
+    .btn-place-order:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .empty-cart {
+      text-align: center;
+      padding: 60px 20px;
+      background: #faf8f3;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      border: 1px solid #d7ccc8;
+    }
+    
+    .empty-cart h3 {
+      color: #666;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .empty-cart p {
+      color: #999;
+      margin-bottom: 20px;
+    }
+    
+    .empty-cart a {
+      display: inline-block;
+      background: linear-gradient(135deg, #6d4c41 0%, #8b6f47 100%);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.2s, background 0.3s;
+    }
+    
+    .empty-cart a:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <main>
+    <h2>🛒 Your Cart</h2>
+    <div id="cartItems" class="loading">Loading cart...</div>
+    <div id="cartSummary" style="display: none;">
+      <div class="cart-summary">
+        <h3 id="cartTotal">Total: ₱0.00</h3>
+        
+        <div class="checkout-options" style="margin: 25px 0; padding: 25px; background: white; border-radius: 12px; border: 1px solid #d7ccc8;">
+          <h4 style="color: #6d4c41; margin-bottom: 20px; font-size: 1.3rem;">Checkout Options</h4>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="branchSelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Select Branch:</label>
+            <select id="branchSelect" style="width: 100%; padding: 12px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" required>
+              <option value="">Loading branches...</option>
+            </select>
+            <small style="display: block; margin-top: 5px; color: #666; font-size: 0.85rem;">Choose the branch where you want to pick up your order</small>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="checkoutCurrency" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Payment Currency:</label>
+            <select id="checkoutCurrency" style="width: 100%; padding: 12px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+              <option value="">Loading currencies...</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="paymentMethod" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Payment Method:</label>
+            <select id="paymentMethod" style="width: 100%; padding: 12px; border: 2px solid #d7ccc8; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;" required>
+              <option value="">Select payment method</option>
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+        </div>
+        
+        <button id="placeOrder" class="btn-place-order">Place Order</button>
+      </div>
+    </div>
+  </main>
+  
+  <script src="js/include.js"></script>
+  <script>
+    // Load header
+    includeHTML('header-container', 'includes/header.html');
+  </script>
+  <!-- Role-Based Access Control -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Apply access control: require customer login
+    document.addEventListener('DOMContentLoaded', function() {
+      applyPageAccessControl();
+    });
+  </script>
+  <script src="js/cart.js"></script>
+</body>
+</html>
+
