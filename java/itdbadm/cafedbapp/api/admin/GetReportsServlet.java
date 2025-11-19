@@ -64,17 +64,26 @@ public class GetReportsServlet extends HttpServlet {
             // Total Sales
             String salesQuery;
             if ("admin".equals(role)) {
-                salesQuery = "SELECT SUM(amount_paid * exchange_rate) as total_sales_php, COUNT(*) as total_transactions " +
-                           "FROM TransactionTbl " +
-                           "WHERE status = 'completed' AND DATE(transaction_date) BETWEEN ? AND ?";
+                salesQuery = "SELECT SUM(o.total_amount * t.exchange_rate) AS total_sales_php, " +
+                            "       COUNT(*) AS total_transactions " +
+                            "FROM TransactionTbl t " +
+                            "JOIN OrderTbl o ON t.order_id = o.order_id " +
+                            "WHERE o.status <> 'cancelled' " +         // order takes priority
+                            "  AND t.status = 'completed' " +          // only count completed transactions
+                            "  AND DATE(t.transaction_date) BETWEEN ? AND ?";
             } else {
                 if (branchIdObj == null) {
                     ResponseUtil.sendErrorResponse(response, "Branch ID not found", 400);
-                    return;
+                    return; 
                 }
-                salesQuery = "SELECT SUM(amount_paid * exchange_rate) as total_sales_php, COUNT(*) as total_transactions " +
-                           "FROM TransactionTbl " +
-                           "WHERE status = 'completed' AND branch_id = ? AND DATE(transaction_date) BETWEEN ? AND ?";
+                salesQuery = "SELECT SUM(o.total_amount * t.exchange_rate) AS total_sales_php, " +
+                            "       COUNT(*) AS total_transactions " +
+                            "FROM TransactionTbl t " +
+                            "JOIN OrderTbl o ON t.order_id = o.order_id " +
+                            "WHERE o.status <> 'cancelled' " +         // order status overrides
+                            "  AND t.status = 'completed' " +
+                            "  AND t.branch_id = ? " +
+                            "  AND DATE(t.transaction_date) BETWEEN ? AND ?";
             }
             
             try (PreparedStatement stmt = conn.prepareStatement(salesQuery)) {
@@ -311,15 +320,18 @@ public class GetReportsServlet extends HttpServlet {
                             java.time.LocalDate yearEnd = java.time.LocalDate.of(currentYear, 12, 31);
                             
                             String fallbackQuery = "SELECT b.branch_id, b.name AS branch_name, " +
-                                                  "COALESCE(SUM(t.amount_paid * t.exchange_rate), 0.00) AS total_sales, " +
-                                                  "COALESCE(COUNT(DISTINCT t.transaction_id), 0) AS transaction_count " +
-                                                  "FROM Branch b " +
-                                                  "LEFT JOIN TransactionTbl t ON t.branch_id = b.branch_id " +
-                                                  "AND DATE(t.transaction_date) >= ? " +
-                                                  "AND DATE(t.transaction_date) <= ? " +
-                                                  "AND t.status = 'completed' " +
-                                                  "GROUP BY b.branch_id, b.name " +
-                                                  "ORDER BY total_sales DESC";
+                                                    "  COALESCE(SUM(CASE WHEN o.status <> 'cancelled' " +
+                                                    "                   THEN (o.total_amount * t.exchange_rate) " +
+                                                    "                   ELSE 0 END), 0.00) AS total_sales, " +
+                                                    "  COALESCE(COUNT(DISTINCT CASE WHEN o.status <> 'cancelled' " +
+                                                    "                              THEN t.transaction_id END), 0) AS transaction_count " +
+                                                    "FROM Branch b " +
+                                                    "LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id " +
+                                                    "LEFT JOIN TransactionTbl t ON t.order_id = o.order_id " +
+                                                    "  AND DATE(t.transaction_date) BETWEEN ? AND ? " +
+                                                    "  AND t.status = 'completed' " +
+                                                    "GROUP BY b.branch_id, b.name " +
+                                                    "ORDER BY total_sales DESC";
                             
                             try (PreparedStatement stmt = conn.prepareStatement(fallbackQuery)) {
                                 stmt.setDate(1, java.sql.Date.valueOf(yearStart));
@@ -392,14 +404,20 @@ public class GetReportsServlet extends HttpServlet {
                                 java.time.LocalDate weekEnd = weekStart.plusDays(6);
                                 
                                 fallbackQuery = "SELECT b.branch_id, b.name AS branch_name, " +
-                                              "COALESCE(SUM(t.amount_paid * t.exchange_rate), 0.00) AS total_sales, " +
-                                              "COALESCE(COUNT(DISTINCT t.transaction_id), 0) AS transaction_count " +
-                                              "FROM Branch b " +
-                                              "LEFT JOIN TransactionTbl t ON t.branch_id = b.branch_id " +
-                                              "AND DATE(t.transaction_date) BETWEEN ? AND ? " +
-                                              "AND t.status = 'completed' " +
-                                              "GROUP BY b.branch_id, b.name " +
-                                              "ORDER BY total_sales DESC";
+                                                "  COALESCE(SUM(CASE WHEN o.status <> 'cancelled' " +
+                                                "                   THEN (o.total_amount * t.exchange_rate) " +
+                                                "                   ELSE 0 END), 0.00) AS total_sales, " +
+                                                "  COALESCE(COUNT(DISTINCT CASE WHEN o.status <> 'cancelled' " +
+                                                "                              THEN t.transaction_id END), 0) AS transaction_count " +
+                                                "FROM Branch b " +
+                                                "LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id " +
+                                                "LEFT JOIN TransactionTbl t ON t.order_id = o.order_id " +
+                                                "  AND DATE(t.transaction_date) BETWEEN ? AND ? " +
+                                                "  AND t.status = 'completed' " +
+                                                "GROUP BY b.branch_id, b.name " +
+                                                "ORDER BY total_sales DESC";
+
+                                
                                 
                                 try (PreparedStatement stmt = conn.prepareStatement(fallbackQuery)) {
                                     stmt.setDate(1, java.sql.Date.valueOf(weekStart));
@@ -422,15 +440,18 @@ public class GetReportsServlet extends HttpServlet {
                                 java.time.LocalDate monthEnd = monthStart.withDayOfMonth(monthStart.lengthOfMonth());
                                 
                                 fallbackQuery = "SELECT b.branch_id, b.name AS branch_name, " +
-                                              "COALESCE(SUM(t.amount_paid * t.exchange_rate), 0.00) AS total_sales, " +
-                                              "COALESCE(COUNT(DISTINCT t.transaction_id), 0) AS transaction_count " +
-                                              "FROM Branch b " +
-                                              "LEFT JOIN TransactionTbl t ON t.branch_id = b.branch_id " +
-                                              "AND DATE(t.transaction_date) >= ? " +
-                                              "AND DATE(t.transaction_date) <= ? " +
-                                              "AND t.status = 'completed' " +
-                                              "GROUP BY b.branch_id, b.name " +
-                                              "ORDER BY total_sales DESC";
+                                                "  COALESCE(SUM(CASE WHEN o.status <> 'cancelled' " +
+                                                "                   THEN (o.total_amount * t.exchange_rate) " +
+                                                "                   ELSE 0 END), 0.00) AS total_sales, " +
+                                                "  COALESCE(COUNT(DISTINCT CASE WHEN o.status <> 'cancelled' " +
+                                                "                              THEN t.transaction_id END), 0) AS transaction_count " +
+                                                "FROM Branch b " +
+                                                "LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id " +
+                                                "LEFT JOIN TransactionTbl t ON t.order_id = o.order_id " +
+                                                "  AND DATE(t.transaction_date) BETWEEN ? AND ? " +
+                                                "  AND t.status = 'completed' " +
+                                                "GROUP BY b.branch_id, b.name " +
+                                                "ORDER BY total_sales DESC";
                                 
                                 try (PreparedStatement stmt = conn.prepareStatement(fallbackQuery)) {
                                     stmt.setDate(1, java.sql.Date.valueOf(monthStart));

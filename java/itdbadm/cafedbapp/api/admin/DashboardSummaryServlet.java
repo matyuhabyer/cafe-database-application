@@ -60,11 +60,11 @@ public class DashboardSummaryServlet extends HttpServlet {
         Map<String, Object> totals = new HashMap<>();
 
         String totalsQuery = "SELECT " +
-                "COALESCE(SUM(t.amount_paid * t.exchange_rate), 0) AS total_sales, " +
-                "COUNT(DISTINCT t.transaction_id) AS total_transactions, " +
-                "COALESCE(SUM(CASE WHEN o.status IN ('pending','confirmed') THEN 1 ELSE 0 END), 0) AS active_orders " +
-                "FROM TransactionTbl t " +
-                "RIGHT JOIN OrderTbl o ON o.order_id = t.order_id";
+                            "  COALESCE(SUM(CASE WHEN o.status <> 'cancelled' THEN (o.total_amount * t.exchange_rate) ELSE 0 END), 0) AS total_sales, " +
+                            "  COUNT(DISTINCT CASE WHEN o.status <> 'cancelled' THEN t.transaction_id END) AS total_transactions, " +
+                            "  COALESCE(SUM(CASE WHEN o.status IN ('pending','confirmed') THEN 1 ELSE 0 END), 0) AS active_orders " +
+                            "FROM OrderTbl o " +
+                            "LEFT JOIN TransactionTbl t ON o.order_id = t.order_id";
 
         try (PreparedStatement stmt = conn.prepareStatement(totalsQuery);
              ResultSet rs = stmt.executeQuery()) {
@@ -103,14 +103,14 @@ public class DashboardSummaryServlet extends HttpServlet {
     private List<Map<String, Object>> fetchBranchPerformance(Connection conn) throws SQLException {
         List<Map<String, Object>> branches = new ArrayList<>();
         String query = "SELECT b.branch_id, b.name, " +
-                "COALESCE(SUM(t.amount_paid * t.exchange_rate), 0) AS total_sales, " +
-                "COUNT(DISTINCT t.transaction_id) AS transactions, " +
-                "COALESCE(SUM(CASE WHEN o.status IN ('pending','confirmed') THEN 1 ELSE 0 END), 0) AS pending_orders " +
-                "FROM Branch b " +
-                "LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id " +
-                "LEFT JOIN TransactionTbl t ON t.order_id = o.order_id " +
-                "GROUP BY b.branch_id, b.name " +
-                "ORDER BY total_sales DESC";
+                        "  COALESCE(SUM(CASE WHEN o.status <> 'cancelled' THEN (o.total_amount * t.exchange_rate) ELSE 0 END), 0) AS total_sales, " +
+                        "  COUNT(DISTINCT CASE WHEN o.status <> 'cancelled' THEN t.transaction_id END) AS transactions, " +
+                        "  COALESCE(SUM(CASE WHEN o.status IN ('pending','confirmed') THEN 1 ELSE 0 END), 0) AS pending_orders " +
+                        "FROM Branch b " +
+                        "LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id " +
+                        "LEFT JOIN TransactionTbl t ON t.order_id = o.order_id " +
+                        "GROUP BY b.branch_id, b.name " +
+                        "ORDER BY total_sales DESC";
 
         try (PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {

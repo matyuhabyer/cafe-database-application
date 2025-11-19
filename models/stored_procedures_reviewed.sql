@@ -555,14 +555,24 @@ BEGIN
     SELECT
         b.branch_id,
         b.name AS branch_name,
-        COALESCE(SUM(t.amount_paid * t.exchange_rate), 0.00) AS total_sales,
-        COALESCE(COUNT(DISTINCT t.transaction_id), 0) AS transaction_count
+        COALESCE(SUM(
+            CASE 
+                WHEN o.status <> 'cancelled' AND t.status = 'completed'
+                THEN o.total_amount * t.exchange_rate
+                ELSE 0
+            END
+        ), 0.00) AS total_sales,
+        COALESCE(COUNT(DISTINCT
+            CASE 
+                WHEN o.status <> 'cancelled' AND t.status = 'completed'
+                THEN t.transaction_id
+            END
+        ), 0) AS transaction_count
     FROM Branch b
-    LEFT JOIN TransactionTbl t ON t.branch_id = b.branch_id
+    LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id
+    LEFT JOIN TransactionTbl t ON t.order_id = o.order_id
         AND DATE(t.transaction_date) BETWEEN p_week_start AND v_week_end
-        AND t.status = 'completed'
     GROUP BY b.branch_id, b.name
-    HAVING b.branch_id IS NOT NULL  -- Ensure we only return valid branches
     ORDER BY total_sales DESC;
 END$$
 
@@ -587,15 +597,24 @@ BEGIN
     SELECT
         b.branch_id,
         b.name AS branch_name,
-        COALESCE(SUM(t.amount_paid * t.exchange_rate), 0.00) AS total_sales,
-        COALESCE(COUNT(DISTINCT t.transaction_id), 0) AS transaction_count
+        COALESCE(SUM(
+            CASE 
+                WHEN o.status <> 'cancelled' AND t.status = 'completed'
+                THEN o.total_amount * t.exchange_rate
+                ELSE 0
+            END
+        ), 0.00) AS total_sales,
+        COALESCE(COUNT(DISTINCT
+            CASE 
+                WHEN o.status <> 'cancelled' AND t.status = 'completed'
+                THEN t.transaction_id
+            END
+        ), 0) AS transaction_count
     FROM Branch b
-    LEFT JOIN TransactionTbl t ON t.branch_id = b.branch_id
-        AND DATE(t.transaction_date) >= p_month_start
-        AND DATE(t.transaction_date) <= v_month_end
-        AND t.status = 'completed'
+    LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id
+    LEFT JOIN TransactionTbl t ON t.order_id = o.order_id
+        AND DATE(t.transaction_date) BETWEEN p_month_start AND v_month_end
     GROUP BY b.branch_id, b.name
-    HAVING b.branch_id IS NOT NULL
     ORDER BY total_sales DESC;
 END$$
 
@@ -622,15 +641,24 @@ BEGIN
     SELECT
         b.branch_id,
         b.name AS branch_name,
-        COALESCE(SUM(t.amount_paid * t.exchange_rate), 0.00) AS total_sales,
-        COALESCE(COUNT(DISTINCT t.transaction_id), 0) AS transaction_count
+        COALESCE(SUM(
+            CASE 
+                WHEN o.status <> 'cancelled' AND t.status = 'completed'
+                THEN o.total_amount * t.exchange_rate
+                ELSE 0
+            END
+        ), 0.00) AS total_sales,
+        COALESCE(COUNT(DISTINCT
+            CASE 
+                WHEN o.status <> 'cancelled' AND t.status = 'completed'
+                THEN t.transaction_id
+            END
+        ), 0) AS transaction_count
     FROM Branch b
-    LEFT JOIN TransactionTbl t ON t.branch_id = b.branch_id
-        AND DATE(t.transaction_date) >= v_year_start
-        AND DATE(t.transaction_date) <= v_year_end
-        AND t.status = 'completed'
+    LEFT JOIN OrderTbl o ON o.branch_id = b.branch_id
+    LEFT JOIN TransactionTbl t ON t.order_id = o.order_id
+        AND DATE(t.transaction_date) BETWEEN v_year_start AND v_year_end
     GROUP BY b.branch_id, b.name
-    HAVING b.branch_id IS NOT NULL
     ORDER BY total_sales DESC;
 END$$
 

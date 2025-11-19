@@ -53,7 +53,7 @@ public class TestConnection {
             System.out.println();
             System.out.println("Troubleshooting Tips:");
             System.out.println("1. Make sure SSH tunnel is active:");
-            System.out.println("   ssh -L 3307:ccscloud.dlsu.edu.ph:21013 your_username@ccscloud.dlsu.edu.ph");
+            System.out.println("   ssh -L 3307:ccscloud.dlsu.edu.ph:3306 your_username@ccscloud.dlsu.edu.ph");
             System.out.println("2. Verify MySQL credentials are correct");
             System.out.println("3. Check if port 3307 is available");
             System.out.println("4. Ensure MySQL JDBC driver is in classpath");
